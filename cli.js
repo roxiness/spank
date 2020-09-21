@@ -5,6 +5,7 @@ const ora = require('ora')
 const { resolve } = require('path')
 const { existsSync, outputFile } = require('fs-extra')
 const { ssr } = require('@sveltech/ssr')
+const assert = require('assert').strict
 const CONFIG = 'spank.config.js'
 let spinner
 
@@ -13,26 +14,35 @@ const defaults = {
     entrypoint: 'dist/__app.html',
     script: 'dist/build/bundle.js',
     forceIndex: false,
-    sitemap: 'urls.js',
+    sitemap: '',
     inlineDynamicImports: false,
-    concurrently: 3
+    concurrently: 3,
+    eventName: "app-loaded",
+    host: 'http://jsdom.ssr'
 };
 
 (async function cli() {
-    if (existsSync(CONFIG))
+    if (existsSync(CONFIG)) {
         Object.assign(defaults, await require(resolve(process.cwd(), CONFIG)))
+    }
 
     program
         .option('-d, --debug', 'extra debugging')
-        .option('-m, --sitemap <location>', defaults.urls)
+        .option('-m, --sitemap <location>', 'array of relative URLs process', defaults.sitemap)
         .option('-i, --inline-dynamic-imports', 'Necessary for imports', defaults.inlineDynamicImports)
         .option('-f, --force-index', 'Convert all files to [name]/index.html', defaults.forceIndex)
         .option('-e, --entrypoint <entrypoint>', "HTML template", defaults.entrypoint)
         .option('-s, --script <script file>', "Script file", defaults.script)
         .option('-o, --output-dir <folder>', "Output folder", defaults.outputDir)
-        .option('-c, --concurrently <number>', "Output folder", defaults.concurrently.toString())
+        .option('-c, --concurrently <number>', "max running jobs", defaults.concurrently.toString())
+        .option('-v, --event-name <string|false>', 'wait for this event before writing HTMLs', defaults.eventName)
+        .option('-h, --host <string>', 'URL prefix', defaults.host)
         .action(program => {
-            const options = program.opts()
+            const options = program.opts();
+            if (!options.sitemap) {
+                console.log('sitemap is required')
+                process.exit()
+            }
             runExports(options)
         })
 
@@ -65,13 +75,13 @@ async function runExports(options) {
 
 /** @param {defaults} options */
 function saveUrlToHtml(options) {
-    const { entrypoint, script, outputDir, forceIndex } = options
+    const { entrypoint, script, outputDir, forceIndex, eventName, host } = options
 
     /** @param {string} url */
     return async url => {
-        const html = await ssr(entrypoint, script, url, { silent: true })
+        const html = await ssr(entrypoint, script, url, { silent: true, eventName, host })
         const suffix = forceIndex && !url.endsWith('/index') ? '/index' : ''
-        await outputFile(`${outputDir}/test/${url + suffix}.html`, html)
+        await outputFile(`${outputDir + url + suffix}.html`, html)
     }
 }
 

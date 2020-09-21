@@ -1,0 +1,21 @@
+{
+  "name": "spank",
+  "version": "1.0.0",
+  "description": "",
+  "bin": {
+    "spastastic": "cli.js"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@sveltech/ssr": "^0.0.12",
+    "commander": "^6.1.0",
+    "fs-extra": "^9.0.1",
+    "ora": "^5.1.0",
+    "rollup": "^2.28.0"
+  }
+}

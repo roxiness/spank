@@ -5,7 +5,7 @@ const ora = require('ora')
 const { resolve } = require('path')
 const { existsSync, outputFile } = require('fs-extra')
 const { ssr } = require('@sveltech/ssr')
-const CONFIG = 'spastastic.config.js'
+const CONFIG = 'spank.config.js'
 let spinner
 
 const defaults = {

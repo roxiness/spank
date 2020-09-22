@@ -1,29 +1,16 @@
 #!/usr/bin/env node
+/** @typedef {import('./getConfig.js')['defaults']} defaults */
 
 const program = require('commander')
 const ora = require('ora')
 const { resolve } = require('path')
-const { existsSync, outputFile } = require('fs-extra')
+const { outputFile } = require('fs-extra')
 const { ssr } = require('@roxi/ssr')
-const CONFIG = 'spank.config.js'
 let spinner
 
-const defaults = {
-    outputDir: 'dist',
-    entrypoint: 'dist/__app.html',
-    script: 'dist/build/bundle.js',
-    forceIndex: false,
-    sitemap: '',
-    inlineDynamicImports: false,
-    concurrently: 3,
-    eventName: "",
-    host: 'http://jsdom.ssr'
-};
 
 (async function cli() {
-    if (existsSync(CONFIG)) {
-        Object.assign(defaults, await require(resolve(process.cwd(), CONFIG)))
-    }
+    const defaults = await require('./getConfig').getConfig()
 
     program
         .option('-d, --debug', 'extra debugging')
@@ -39,7 +26,7 @@ const defaults = {
         .action(program => {
             const options = program.opts();
             if (!options.sitemap) {
-                console.log('sitemap is required')
+                ora('sitemap is required').fail()
                 process.exit()
             }
             runExports(options)

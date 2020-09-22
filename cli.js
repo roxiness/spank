@@ -16,7 +16,7 @@ const defaults = {
     sitemap: '',
     inlineDynamicImports: false,
     concurrently: 3,
-    eventName: "app-loaded",
+    eventName: "",
     host: 'http://jsdom.ssr'
 };
 

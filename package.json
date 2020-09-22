@@ -8,10 +8,10 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jakobrosenberg/spank.git"
+    "url": "git+https://github.com/roxiness/spank.git"
   },
   "scripts": {},
-  "author": "",
+  "author": "jakobrosenberg@gmail.com",
   "license": "MIT",
   "dependencies": {
     "@roxi/ssr": "^0.1.0",

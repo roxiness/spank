@@ -44,7 +44,7 @@ spank can also be used without a config. Use `npx spank --help` for parameters.
 
 ### How does it work?
 
-For each path in the sitemap Spank creates a corresponding SPA in a simulated browser. The content for each page is then saved to the output folder.
+For each path in the sitemap, Spank creates a corresponding SPA in a simulated browser. The HTML for each page is then saved to the output folder.
 
 ---
 

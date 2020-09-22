@@ -4,8 +4,7 @@ const program = require('commander')
 const ora = require('ora')
 const { resolve } = require('path')
 const { existsSync, outputFile } = require('fs-extra')
-const { ssr } = require('@sveltech/ssr')
-const assert = require('assert').strict
+const { ssr } = require('@roxi/ssr')
 const CONFIG = 'spank.config.js'
 let spinner
 

@@ -10,7 +10,9 @@
     "type": "git",
     "url": "git+https://github.com/roxiness/spank.git"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "ava"
+  },
   "author": "jakobrosenberg@gmail.com",
   "license": "MIT",
   "dependencies": {
@@ -18,7 +20,21 @@
     "chalk": "^4.1.0",
     "commander": "^6.1.0",
     "fs-extra": "^9.0.1",
+    "node-html-parser": "^1.2.21",
     "ora": "^5.1.0",
     "rollup": "^2.28.0"
+  },
+  "devDependencies": {
+    "ava": "^3.12.1"
+  },
+  "ava": {
+    "files": [
+      "test/specs/**",
+      "test/**/*.spec.*"
+    ],
+    "ignoredByWatcher": [
+      "**/output",
+      "**/spank-summary.json"
+    ]
   }
 }

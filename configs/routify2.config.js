@@ -9,7 +9,7 @@ module.exports = {
             entrypoint: 'dist/__app.html',
             script: hasBundle ? 'dist/build/bundle.js' : 'dist/build/main.js',
             eventName: 'app-loaded',
-            inlineDynamicImports: !!hasBundle
+            inlineDynamicImports: !hasBundle
         }
     }
 }

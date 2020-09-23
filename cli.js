@@ -1,13 +1,9 @@
 #!/usr/bin/env node
 /** @typedef {import('./getConfig.js')['defaults']} defaults */
 
+const { start } = require('./index')
 const program = require('commander')
-const ora = require('ora')
-const { resolve } = require('path')
-const { outputFile } = require('fs-extra')
-const { ssr } = require('@roxi/ssr')
-let spinner
-
+const ora = require('ora');
 
 (async function cli() {
     const defaults = await require('./getConfig').getConfig()
@@ -23,86 +19,12 @@ let spinner
         .option('-c, --concurrently <number>', "max running jobs", defaults.concurrently.toString())
         .option('-v, --event-name <string|false>', 'wait for this event before writing HTMLs', defaults.eventName)
         .option('-h, --host <string>', 'URL prefix', defaults.host)
+        .option('-p, --depth <number>', 'How deep to crawl for links', defaults.depth.toString())
+        .option('-w. --write-summary [path]','Save summary of processed URLs', defaults.writeSummary)
         .action(program => {
-            const options = program.opts();
-            if (!options.sitemap) {
-                ora('sitemap is required').fail()
-                process.exit()
-            }
-            runExports(options)
+            const options = program.opts()
+            start(options)
         })
 
     program.parse(process.argv)
 })()
-
-/** @param {defaults} options */
-async function runExports(options) {
-    spinner = ora({ interval: 20 }).start()
-    const urls = require(resolve(process.cwd(), options.sitemap))
-    if (options.inlineDynamicImports) {
-        spinner.text = 'Inlining dynamic imports'
-        options.script = await resolveScript(options)
-        spinner.succeed('Inline dynamic imports')
-        spinner = ora({ interval: 20 }).start()
-    }
-
-    const urlToHtml = saveUrlToHtml(options)
-    const queue = new Queue(options.concurrently)
-    urls.forEach((url, index) => queue.push(async () => {
-        spinner.text = `Exporting ${index + 1} of ${urls.length} ${url}`
-        await urlToHtml(url)
-    }))
-
-    const time = Date.now()
-    await new Promise((resolve) => { queue.done = () => resolve() })
-    spinner.succeed(`Exported ${urls.length} pages in ${Date.now() - time} ms`)
-}
-
-
-/** @param {defaults} options */
-function saveUrlToHtml(options) {
-    const { entrypoint, script, outputDir, forceIndex, eventName, host } = options
-
-    /** @param {string} url */
-    return async url => {
-        const html = await ssr(entrypoint, script, url, { silent: true, eventName, host })
-        const suffix = forceIndex && !url.endsWith('/index') ? '/index' : ''
-        await outputFile(`${outputDir + url + suffix}.html`, html)
-    }
-}
-
-/** @param {defaults} options */
-async function resolveScript({ script }) {
-    const bundle = await require('rollup').rollup({ input: script, inlineDynamicImports: true, })
-    const { output } = await bundle.generate({ format: 'umd', name: "bundle" })
-    return output[0].code
-}
-
-
-/** @param {number} concurrency */
-function Queue(concurrency) {
-    /** @type {function[]} */
-    const queue = []
-    let freeSlots = concurrency
-    this.done = () => { }
-    const _this = this
-
-    /** @param {function=} fn */
-    this.push = function (fn) {
-        queue.push(fn)
-        this.runAll()
-    }
-    this.runAll = async function runAll() {
-        if (freeSlots && queue.length) {
-            freeSlots--
-            const fn = queue.shift()
-            await fn()
-            freeSlots++
-            runAll()
-        }
-        if (!queue.length && concurrency - freeSlots === 0) {
-            _this.done()
-        }
-    }
-    return this
-}

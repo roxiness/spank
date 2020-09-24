@@ -28,6 +28,9 @@ async function start(options) {
 
     /** @param {Url} url */
     const isUnique = url => !urls.find(oldUrl => short(url) === short(oldUrl))
+    
+    /** @param {Url} url */
+    const isntBlacklisted = url => !options.blacklist.includes(url.path)
 
     /** @param {Url} url */
     const isLocal = url => {
@@ -71,7 +74,11 @@ async function start(options) {
                 url.children = await urlToHtml(url.path)
 
                 if (depth < options.depth) {
-                    const newUrls = url.children.filter(isLocal).map(normalize(url)).filter(isUnique)
+                    const newUrls = url.children
+                        .filter(isLocal)
+                        .map(normalize(url))
+                        .filter(isUnique)
+                        .filter(isntBlacklisted)
                     urls.push(...newUrls)
                     processUrls(newUrls, depth + 1)
                 }

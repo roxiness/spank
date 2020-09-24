@@ -22,7 +22,7 @@ const program = require('commander');
         .option('-w. --write-summary [path]', 'Save summary of processed URLs', defaults.writeSummary)
         .action(program => {
             const options = program.opts()
-            start(options)
+            start({ ...defaults, ...options })
         })
 
     program.parse(process.argv)

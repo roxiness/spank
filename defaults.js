@@ -4,6 +4,7 @@ module.exports = {
     script: 'dist/build/bundle.js',
     forceIndex: false,
     sitemap: ['/'],
+    blacklist: [],
     inlineDynamicImports: false,
     concurrently: 3,
     eventName: "",

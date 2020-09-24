@@ -9,6 +9,7 @@ const cli = (t, args, cwd) => {
     return {
         cwd,
         output: resolve(cwd, 'output'),
+        exists: path => existsSync(resolve(output, path)),
         verifyFile(path, re) {
             const html = readFileSync(resolve(output, path), 'utf-8')
             t.regex(html, re)

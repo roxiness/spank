@@ -8,7 +8,8 @@ module.exports = {
         '/foo',
         '/bar',
         '/baz'
-    ]
+    ],
+    blacklist: ['/link2']
     // forceIndex: false,    
     // inlineDynamicImports: false,
     // concurrently: 3

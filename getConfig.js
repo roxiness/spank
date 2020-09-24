@@ -5,19 +5,7 @@ const ora = require('ora')
 let spinner
 
 const CONFIG = 'spank.config.js'
-const defaults = {
-    outputDir: 'dist',
-    entrypoint: 'dist/__app.html',
-    script: 'dist/build/bundle.js',
-    forceIndex: false,
-    sitemap: "",
-    inlineDynamicImports: false,
-    concurrently: 3,
-    eventName: "",
-    host: 'http://jsdom.ssr',
-    depth: 2,
-    writeSummary: false
-}
+const defaults = require('./defaults')
 
 async function getConfig() {
     Object.assign(defaults, await getFrameworkConfig(), await getUserConfig())

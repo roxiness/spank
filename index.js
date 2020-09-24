@@ -1,33 +1,51 @@
-/** @typedef {import('./getConfig.js')['defaults']} defaults */
+/** @typedef {import('./defaults')} Options */
+/** @typedef {{path: string, children?: Url[]}} Url */
 
 const { resolve } = require('path')
-const { outputFile, writeFileSync } = require('fs-extra')
+const { outputFile } = require('fs-extra')
 const { ssr } = require('@roxi/ssr')
 const { parse } = require('node-html-parser')
 const ora = require('ora');
 let spinner
 
-/** @param {defaults} options */
+/** @param {Options} options */
 async function start(options) {
     const queue = new Queue(options.concurrently)
     const hostname = options.host.match(/^https?:\/\/([^/]+)/)[1]
-    const uniqueUrls = require(resolve(process.cwd(), options.sitemap))
-        .map(path => ({ path }))
+
+    /** @type {Url[]} */
+    const urls = (
+        Array.isArray(options.sitemap)
+            ? [...options.sitemap]
+            : require(resolve(process.cwd(), options.sitemap))
+    ).map(path => ({ path }))
+
     spinner = ora({ interval: 20 }).start()
     let counter = 0
 
-    const isUnique = url => !uniqueUrls.find(oldUrl => url.path === oldUrl.path
-    )
+    /** @param {Url} url */
+    const short = url => url.path.replace(/\/index$/, '')
+
+    /** @param {Url} url */
+    const isUnique = url => !urls.find(oldUrl => short(url) === short(oldUrl))
+
+    /** @param {Url} url */
     const isLocal = url => {
         const match = url.path.match(/^https?:\/\/([^/]+)/)
         return !match || match[1] === hostname
     }
+
+    /** @param {Url} parent */
     const normalize = parent => url => {
         const match = url.path.match(/^https?:\/\/[^/]+(.+)/)
         if (match)
             url.path = match[1]
         else if (!url.path.startsWith('/'))
             url.path = `${parent.path.replace(/\/$/, '')}/${url.path}`
+        url.path = url.path
+            .replace(/^\/$/, '/index')
+            .replace(/^([^#?]+).*$/, '$1')
+
         return url
     }
 
@@ -41,19 +59,20 @@ async function start(options) {
 
     const urlToHtml = saveUrlToHtml(options)
 
-    processUrls(uniqueUrls)
+    processUrls(urls)
 
-    function processUrls(list, depth = 0) {
-        list.forEach((url) => {
-            return queue.push(async () => {
+    /** @param {Url[]} _urls */
+    function processUrls(_urls, depth = 0) {
+        _urls.forEach((url) => {
+            queue.push(async () => {
                 counter++
-                // spinner.text = `Exporting ${counter} of ${uniqueUrls.length} ${url.path}`
-                console.log(`Exporting ${counter} of ${uniqueUrls.length} ${url.path}`)
+                spinner.text = `Exporting ${counter} of ${urls.length} ${url.path}`
+                // console.log(`Exporting ${counter} of ${uniqueUrls.length} ${url.path}`)
                 url.children = await urlToHtml(url.path)
 
                 if (depth < options.depth) {
                     const newUrls = url.children.filter(isLocal).map(normalize(url)).filter(isUnique)
-                    uniqueUrls.push(...newUrls)
+                    urls.push(...newUrls)
                     processUrls(newUrls, depth + 1)
                 }
             })
@@ -62,19 +81,29 @@ async function start(options) {
 
     const time = Date.now()
     await new Promise((resolve) => { queue.done = () => resolve() })
-    spinner.succeed(`Exported ${uniqueUrls.length} pages in ${Date.now() - time} ms`)
+    spinner.succeed(`Exported ${urls.length} pages in ${Date.now() - time} ms`)
 
-    if (options.writeSummary) {
-        const path = options.writeSummary.toString().replace(/^true$/, 'spank-summary.json')
-        writeFileSync(path, JSON.stringify({
-            list: uniqueUrls.map(url => url.path),
-            discovery: uniqueUrls,
-        }, null, 2))
-    }
+    if (options.writeSummary)
+        writeSummary(urls, options)
+}
+
+/**
+ * @param {Url[]} urls
+ * @param {Options} options
+ */
+function writeSummary(urls, options) {
+    const path = options.writeSummary.toString().replace(/^true$/, 'spank-summary.json')
+    outputFile(path, JSON.stringify({
+        time: new Date(),
+        options,
+        exports: urls.length,
+        list: urls.map(url => url.path),
+        discovery: urls,
+    }, null, 2))
 }
 
 
-/** @param {defaults} options */
+/** @param {Options} options */
 function saveUrlToHtml(options) {
     const { entrypoint, script, outputDir, forceIndex, eventName, host } = options
 
@@ -90,7 +119,7 @@ function saveUrlToHtml(options) {
     }
 }
 
-/** @param {defaults} options */
+/** @param {Options} options */
 async function resolveScript({ script }) {
     const bundle = await require('rollup').rollup({ input: script, inlineDynamicImports: true, })
     const { output } = await bundle.generate({ format: 'umd', name: "bundle" })

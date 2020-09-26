@@ -2,12 +2,8 @@ module.exports = {
     outputDir: 'output',
     entrypoint: 'dist/index.html',
     script: 'dist/main.js',
-    eventName: '',
+    eventName: 'app-loaded',
     host: 'http://spank.test',
-    sitemap: [
-        '/foo',
-        '/bar',
-        '/baz'
-    ],
-    blacklist: ['/link2']
+    sitemap: ['/index'],
+    inlineDynamicImports: true
 }

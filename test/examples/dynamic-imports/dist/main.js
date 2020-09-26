@@ -5,8 +5,3 @@ import('./file.js').then(res => {
 `
     dispatchEvent(new CustomEvent('app-loaded'))
 })
-
-setTimeout(()=>{
-    dispatchEvent(new CustomEvent('app-loaded'))
-
-},2000)

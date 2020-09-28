@@ -15,9 +15,11 @@ async function getConfig() {
 async function getFrameworkConfig() {
     spinner = ora('Looking for matching config').start()
 
-    const pkgjson = existsSync('package.json')
-        ? require(resolve(process.cwd(), 'package.json'))
-        : { dependencies: {}, devDependencies: {} }
+    const pkgjson = { dependencies: {}, devDependencies: {} };
+    if (existsSync('package.json')) {
+        Object.assign(pkgjson, require(resolve(process.cwd(), 'package.json')));
+    }
+
     Object.assign(pkgjson.dependencies, pkgjson.devDependencies)
 
     const configFiles = readdirSync(resolve(__dirname, 'configs'))

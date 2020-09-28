@@ -1,7 +1,7 @@
 module.exports = {
     name: 'Svite / Routify 2',
     supersedes: ['routify2', 'routify'],
-    condition: ({ pkgjson }) => pkgjson.dependencies['@roxi/routify'],
+    condition: ({ pkgjson }) => pkgjson.dependencies['svite'],
     config: () => {
         const { readFileSync } = require('fs')
         const html = readFileSync('./dist/index.html', 'utf-8')

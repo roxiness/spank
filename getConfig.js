@@ -13,37 +13,46 @@ async function getConfig() {
 }
 
 async function getFrameworkConfig() {
-    const matches = []
-    
     spinner = ora('Looking for matching config').start()
 
     const pkgjson = { dependencies: {}, devDependencies: {} };
     if (existsSync('package.json')) {
         Object.assign(pkgjson, require(resolve(process.cwd(), 'package.json')));
     }
+
     Object.assign(pkgjson.dependencies, pkgjson.devDependencies)
 
-    const configFiles = readdirSync(resolve(__dirname, 'configs'))    
-    
+    const configFiles = readdirSync(resolve(__dirname, 'configs'))
+
     const promises = configFiles.map(async file => {
-        const { condition, config, name } = require(`./configs/${file}`)
+        const { condition, config, name, supersedes } = require(`./configs/${file}`)
         if (condition({ pkgjson })) {
             spinner.text = 'Found matching config: ' + chalk.magentaBright(name)
-            matches.push(name)
-            return await config()
+
+            return await {
+                config: config(),
+                supersedes,
+                name,
+                file: file.replace(/\.config\..+/, '')
+            }
         }
     })
 
-    if (matches.length)
-        spinner.succeed('Found matching config: ' + chalk.magentaBright(matches.join(', ')))
-    else spinner.info('Found no matching config. While one isn\'t required, We would greatly appreciate if you reach out to us. https://github.com/roxiness/spank')
+    const allResolvedConfigs = (await Promise.all(promises)).filter(Boolean)
+    const supersedings = [].concat(...allResolvedConfigs.map(conf => conf.supersedes).filter(Boolean))
+    const resolvedConfigs = allResolvedConfigs.filter(conf => !supersedings.includes(conf.file))
 
-    const configs = await Promise.all(promises)
-    const config = Object.assign({}, ...configs)
-
-    return config
+    if (resolvedConfigs.length) {
+        const names = resolvedConfigs.map(conf => conf.name)
+        const configs = resolvedConfigs.map(conf => conf.config)
+        const config = Object.assign({}, ...configs)
+        spinner.succeed('Found matching config: ' + chalk.magentaBright(names.join(', ')))
+        return config
+    } else {
+        spinner.info('Found no matching config. While one isn\'t required, We would greatly appreciate if you reach out to us. https://github.com/roxiness/spank')
+        return {}
+    }
 }
-
 
 async function getUserConfig() {
     spinner = ora('Looking for user config').start()

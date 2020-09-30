@@ -16,7 +16,7 @@
   "author": "jakobrosenberg@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "@roxi/ssr": "^0.1.0",
+    "@roxi/ssr": "^0.2.0",
     "chalk": "^4.1.0",
     "commander": "^6.1.0",
     "fs-extra": "^9.0.1",

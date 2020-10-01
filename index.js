@@ -48,6 +48,7 @@ async function start(options) {
         url.path = url.path
             .replace(/^\/$/, '/index')
             .replace(/^([^#?]+).*$/, '$1')
+            .replace(/\/$/, '')
 
         return url
     }

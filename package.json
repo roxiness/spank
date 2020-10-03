@@ -16,13 +16,13 @@
   "author": "jakobrosenberg@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "@roxi/ssr": "^0.2.0",
     "chalk": "^4.1.0",
     "commander": "^6.1.0",
     "fs-extra": "^9.0.1",
     "node-html-parser": "^1.2.21",
     "ora": "^5.1.0",
-    "rollup": "^2.28.0"
+    "rollup": "^2.28.0",
+    "tossr": "workspace:^1.0.1"
   },
   "devDependencies": {
     "ava": "^3.12.1"

@@ -3,7 +3,7 @@
 
 const { resolve } = require('path')
 const { outputFile } = require('fs-extra')
-const { ssr } = require('@roxi/ssr')
+const { tossr } = require('tossr')
 const { parse } = require('node-html-parser')
 const ora = require('ora');
 let spinner
@@ -117,7 +117,7 @@ function saveUrlToHtml(options) {
 
     /** @param {string} url */
     return async function urlToHtml(url) {
-        const html = await ssr(entrypoint, script, url, { silent: true, eventName, host })
+        const html = await tossr(entrypoint, script, url, { silent: true, eventName, host })
         const suffix = forceIndex && !url.endsWith('/index') ? '/index' : ''
         await outputFile(`${outputDir + url + suffix}.html`, html)
         const dom = parse(html)

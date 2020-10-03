@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="spank.png" alt="routify" width="400" /><br>
+    <img src="spank.png" alt="spank" width="400" /><br>
 </div>
 
 ## Export HTML pages from your SPA

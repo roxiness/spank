@@ -2,7 +2,7 @@ module.exports = {
     outputDir: 'dist',
     entrypoint: 'dist/__app.html',
     script: 'dist/build/bundle.js',
-    forceIndex: false,
+    forceIndex: true,
     sitemap: ['/'],
     blacklist: [],
     inlineDynamicImports: false,
@@ -10,5 +10,13 @@ module.exports = {
     eventName: "",
     host: 'http://jsdom.ssr',
     depth: 2,
-    writeSummary: false
+    writeSummary: false,
+    ssrOptions: {
+        beforeEval: dom => {
+            const scriptElem = dom.window.document.createElement('script')
+            scriptElem.innerHTML = 'window.__preRendered = true'
+            dom.window.__preRendered = true
+            dom.window.document.head.appendChild(scriptElem)
+        }
+    }
 }

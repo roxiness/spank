@@ -3,7 +3,7 @@
 
 const { resolve } = require('path')
 const { outputFile } = require('fs-extra')
-const { tossr } = require('tossr')
+const { tossr, inlineScript } = require('tossr')
 const { parse } = require('node-html-parser')
 const { getConfig } = require('./getConfig')
 
@@ -15,6 +15,7 @@ async function start(options) {
     options = await getConfig(options)
     const queue = new Queue(options.concurrently)
     const hostname = options.host.match(/^https?:\/\/([^/]+)/)[1]
+    let counter = 0
 
     /** @type {Url[]} */
     const urls = (
@@ -24,7 +25,6 @@ async function start(options) {
     ).map(path => ({ path }))
 
     spinner = ora({ interval: 20 }).start()
-    let counter = 0
 
     /** @param {Url} url */
     const short = url => url.path.replace(/\/index$/, '')
@@ -56,16 +56,10 @@ async function start(options) {
         return url
     }
 
-
-    if (options.inlineDynamicImports) {
-        spinner.text = 'Inlining dynamic imports'
-        options.script = await resolveScript(options)
-        spinner.succeed('Inline dynamic imports')
-        spinner = ora({ interval: 20 }).start()
-    }
-
     const urlToHtml = saveUrlToHtml(options)
 
+    if (options.inlineDynamicImports)
+        await inlineScript(options.script)
     processUrls(urls)
 
     /** @param {Url[]} _urls */
@@ -115,11 +109,11 @@ function writeSummary(urls, options) {
 
 /** @param {Options} options */
 function saveUrlToHtml(options) {
-    const { entrypoint, script, outputDir, forceIndex, eventName, host, ssrOptions } = options
+    const { entrypoint, script, outputDir, forceIndex, eventName, host, ssrOptions, inlineDynamicImports } = options
 
     /** @param {string} url */
     return async function urlToHtml(url) {
-        const html = await tossr(entrypoint, script, url, { silent: true, eventName, host, ...ssrOptions })
+        const html = await tossr(entrypoint, script, url, { silent: true, eventName, host, inlineDynamicImports, ...ssrOptions })
         const suffix = forceIndex && !url.endsWith('/index') ? '/index' : ''
         await outputFile(`${outputDir + url + suffix}.html`, html)
         const dom = parse(html)
@@ -129,12 +123,6 @@ function saveUrlToHtml(options) {
     }
 }
 
-/** @param {Options} options */
-async function resolveScript({ script }) {
-    const bundle = await require('rollup').rollup({ input: script, inlineDynamicImports: true, })
-    const { output } = await bundle.generate({ format: 'umd', name: "bundle" })
-    return output[0].code
-}
 
 
 

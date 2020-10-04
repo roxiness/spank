@@ -1,15 +1,15 @@
 const { existsSync, readdirSync } = require('fs-extra')
 const { resolve } = require('path')
+const { configent } = require('configent')
 const chalk = require('chalk')
 const ora = require('ora')
 let spinner
 
-const CONFIG = 'spank.config.js'
 const defaults = require('./defaults')
 
-async function getConfig() {
-    Object.assign(defaults, await getFrameworkConfig(), await getUserConfig())
-    return defaults
+const getConfig = async input => {
+    const _defaults = { ...defaults, ...await getFrameworkConfig() }
+    return configent('spank', _defaults, input)
 }
 
 async function getFrameworkConfig() {
@@ -29,7 +29,7 @@ async function getFrameworkConfig() {
         if (condition({ pkgjson })) {
             spinner.text = 'Found matching config: ' + chalk.magentaBright(name)
 
-            return await {
+            return {
                 config: config(),
                 supersedes,
                 name,
@@ -54,14 +54,6 @@ async function getFrameworkConfig() {
     }
 }
 
-async function getUserConfig() {
-    spinner = ora('Looking for user config').start()
-    if (existsSync(CONFIG)) {
-        spinner.succeed('found user config: ' + CONFIG)
-        return require(resolve(process.cwd(), CONFIG))
-    } else
-        spinner.stop()
-}
 
 
-module.exports = { getConfig, defaults }
+module.exports = { getConfig }

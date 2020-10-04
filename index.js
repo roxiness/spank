@@ -5,11 +5,14 @@ const { resolve } = require('path')
 const { outputFile } = require('fs-extra')
 const { tossr } = require('tossr')
 const { parse } = require('node-html-parser')
+const { getConfig } = require('./getConfig')
+
 const ora = require('ora');
 let spinner
 
 /** @param {Options} options */
 async function start(options) {
+    options = await getConfig(options)
     const queue = new Queue(options.concurrently)
     const hostname = options.host.match(/^https?:\/\/([^/]+)/)[1]
 
@@ -71,7 +74,6 @@ async function start(options) {
             queue.push(async () => {
                 counter++
                 spinner.text = `Exporting ${counter} of ${urls.length} ${url.path}`
-                // console.log(`Exporting ${counter} of ${uniqueUrls.length} ${url.path}`)
                 url.children = await urlToHtml(url.path)
 
                 if (depth < options.depth) {
@@ -113,11 +115,11 @@ function writeSummary(urls, options) {
 
 /** @param {Options} options */
 function saveUrlToHtml(options) {
-    const { entrypoint, script, outputDir, forceIndex, eventName, host } = options
+    const { entrypoint, script, outputDir, forceIndex, eventName, host, ssrOptions } = options
 
     /** @param {string} url */
     return async function urlToHtml(url) {
-        const html = await tossr(entrypoint, script, url, { silent: true, eventName, host })
+        const html = await tossr(entrypoint, script, url, { silent: true, eventName, host, ...ssrOptions })
         const suffix = forceIndex && !url.endsWith('/index') ? '/index' : ''
         await outputFile(`${outputDir + url + suffix}.html`, html)
         const dom = parse(html)

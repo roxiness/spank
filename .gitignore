@@ -1,4 +1,5 @@
 node_modules
 test/examples/*/output
 test/examples/*/spank-summary.json
+**/dist/
 **/__roxi-ssr-bundle.js

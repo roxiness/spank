@@ -15,6 +15,7 @@ async function start(options) {
     options = await getConfig(options)
     const queue = new Queue(options.concurrently)
     const hostname = options.host.match(/^https?:\/\/([^/]+)/)[1]
+    const originRe = new RegExp(`^(https?:)?\/\/${hostname}`)
     let counter = 0
 
     /** @type {Url[]} */
@@ -31,24 +32,25 @@ async function start(options) {
 
     /** @param {Url} url */
     const isUnique = url => !urls.find(oldUrl => short(url) === short(oldUrl))
-    
+
     /** @param {Url} url */
     const isntBlacklisted = url => !options.blacklist.includes(url.path)
 
     /** @param {Url} url */
-    const isLocal = url => {
-        const match = url.path.match(/^https?:\/\/([^/]+)/)
-        return !match || match[1] === hostname
-    }
+    const isValidPath = url =>
+        // we don't want `mailto:mail.example.com` or `http://example.com` 
+        !url.path.match(/^[a-z0-9]+\:/)
+        // or `//example.com`
+        && !url.path.startsWith('//')
+
+    /** @param {Url} url */
+    const hrefToPath = url => ({ ...url, path: url.path.replace(originRe, '') })
 
     /** @param {Url} parent */
     const normalize = parent => url => {
-        const match = url.path.match(/^https?:\/\/[^/]+(.+)/)
-        if (match)
-            url.path = match[1]
-        else if (!url.path.startsWith('/'))
-            url.path = `${parent.path.replace(/\/$/, '')}/${url.path}`
         url.path = url.path
+            .replace(originRe, '')
+            .replace(/^([^/].*)/, `${parent.path}/$1`) // if path is relative, path = parent.path + / + path
             .replace(/^\/$/, '/index') // root should be named index
             .replace(/#.*/, '') // discard anything after a #
             .replace(/\/$/, '') // remove trailing slashes
@@ -72,7 +74,8 @@ async function start(options) {
 
                 if (depth < options.depth) {
                     const newUrls = url.children
-                        .filter(isLocal)
+                        .map(hrefToPath)
+                        .filter(isValidPath)
                         .map(normalize(url))
                         .filter(isUnique)
                         .filter(isntBlacklisted)

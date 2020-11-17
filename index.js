@@ -49,9 +49,9 @@ async function start(options) {
         else if (!url.path.startsWith('/'))
             url.path = `${parent.path.replace(/\/$/, '')}/${url.path}`
         url.path = url.path
-            .replace(/^\/$/, '/index')
-            .replace(/^([^#?]+).*$/, '$1')
-            .replace(/\/$/, '')
+            .replace(/^\/$/, '/index') // root should be named index
+            .replace(/#.*/, '') // discard anything after a #
+            .replace(/\/$/, '') // remove trailing slashes
 
         return url
     }

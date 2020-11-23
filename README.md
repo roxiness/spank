@@ -17,7 +17,7 @@ module.exports = {
 }
 ```
 
-open terminal and type
+open your terminal and type
 ```
 npx spank
 ```

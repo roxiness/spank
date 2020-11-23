@@ -2,7 +2,8 @@
     <img src="spank.png" alt="spank" width="400" /><br>
 </div>
 
-## Export HTML pages from your SPA
+## Static Site Generator (SSG) 
+#### Exports HTML pages from your SPA
 
 ### Usage
 

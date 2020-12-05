@@ -40,7 +40,7 @@ spank can also be used without a config. Use `npx spank --help` for parameters.
 |concurrently|`3`| Max simultaneous running jobs |
 |eventName|| If specified, HTMLs aren't saved till the page has emitted the event.|
 |host|`http://jsdom.ssr`|Simulated host  |
-|blacklist|[]|List of paths to be ignored|
+|blacklist|[]|List of paths to be ignored. Regular expressions are supported|
 |depth|2|How far to crawl any path in the sitemap|
 |ssrOptions|{}|Options to be passed to [tossr](https://github.com/roxiness/tossr#config)|
 ---

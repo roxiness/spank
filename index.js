@@ -76,7 +76,9 @@ async function start(options) {
 
     /** @param {Url[]} _urls */
     function processUrls(_urls, depth = 0) {
-        _urls.forEach((url) => {
+        _urls
+        .filter(isntBlacklisted)
+        .forEach((url) => {
             queue.push(async () => {
                 counter++
                 spinner.text = `Exporting ${counter} of ${urls.length} ${url.path}`

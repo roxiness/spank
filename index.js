@@ -34,7 +34,17 @@ async function start(options) {
     const isUnique = url => !urls.find(oldUrl => short(url) === short(oldUrl))
 
     /** @param {Url} url */
-    const isntBlacklisted = url => !options.blacklist.includes(url.path)
+    const isntBlacklisted = url => 
+      !options.blacklist.some(e => {
+        if (typeof e == "string") {
+          return e == url.path;
+        } else if (e instanceof RegExp) {
+          return e.test(url.path);
+        } else {
+          console.warn("config option 'blacklist' should contain only strings and/or regular expressions");
+          return true; // Ignore non string or regex backlist item 
+        }
+      })
 
     /** @param {Url} url */
     const isValidPath = url =>

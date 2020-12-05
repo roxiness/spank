@@ -100,7 +100,7 @@ async function start(options) {
 
     const time = Date.now()
     await new Promise((resolve) => { queue.done = () => resolve() })
-    spinner.succeed(`Exported ${urls.length} pages in ${Date.now() - time} ms`)
+    spinner.succeed(`Exported ${counter} pages (${urls.length - counter} ignored) from total ${urls.length} pages in ${Date.now() - time} ms`)
 
     if (options.writeSummary)
         writeSummary(urls, options)

@@ -9,5 +9,5 @@ module.exports = {
         '/bar',
         '/baz'
     ],
-    blacklist: ['/link2']
+    blacklist: ['/link2', /\/link[3|4]/]
 }

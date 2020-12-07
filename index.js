@@ -34,7 +34,17 @@ async function start(options) {
     const isUnique = url => !urls.find(oldUrl => short(url) === short(oldUrl))
 
     /** @param {Url} url */
-    const isntBlacklisted = url => !options.blacklist.includes(url.path)
+    const isntBlacklisted = url => 
+      !options.blacklist.some(e => {
+        if (typeof e == "string") {
+          return e == url.path;
+        } else if (e instanceof RegExp) {
+          return e.test(url.path);
+        } else {
+          console.warn("config option 'blacklist' should contain only strings and/or regular expressions");
+          return true; // Ignore non string or regex backlist item 
+        }
+      })
 
     /** @param {Url} url */
     const isValidPath = url =>
@@ -66,7 +76,9 @@ async function start(options) {
 
     /** @param {Url[]} _urls */
     function processUrls(_urls, depth = 0) {
-        _urls.forEach((url) => {
+        _urls
+        .filter(isntBlacklisted)
+        .forEach((url) => {
             queue.push(async () => {
                 counter++
                 spinner.text = `Exporting ${counter} of ${urls.length} ${url.path}`
@@ -88,7 +100,7 @@ async function start(options) {
 
     const time = Date.now()
     await new Promise((resolve) => { queue.done = () => resolve() })
-    spinner.succeed(`Exported ${urls.length} pages in ${Date.now() - time} ms`)
+    spinner.succeed(`Exported ${counter} pages (${urls.length - counter} ignored) from total ${urls.length} pages in ${Date.now() - time} ms`)
 
     if (options.writeSummary)
         writeSummary(urls, options)

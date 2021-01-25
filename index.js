@@ -34,17 +34,17 @@ async function start(options) {
     const isUnique = url => !urls.find(oldUrl => short(url) === short(oldUrl))
 
     /** @param {Url} url */
-    const isntBlacklisted = url => 
-      !options.blacklist.some(e => {
-        if (typeof e == "string") {
-          return e == url.path;
-        } else if (e instanceof RegExp) {
-          return e.test(url.path);
-        } else {
-          console.warn("config option 'blacklist' should contain only strings and/or regular expressions");
-          return true; // Ignore non string or regex backlist item 
-        }
-      })
+    const isntBlacklisted = url =>
+        !options.blacklist.some(e => {
+            if (typeof e == "string") {
+                return e == url.path;
+            } else if (e instanceof RegExp) {
+                return e.test(url.path);
+            } else {
+                console.warn("config option 'blacklist' should contain only strings and/or regular expressions");
+                return true; // Ignore non string or regex backlist item 
+            }
+        })
 
     /** @param {Url} url */
     const isValidPath = url =>
@@ -77,25 +77,25 @@ async function start(options) {
     /** @param {Url[]} _urls */
     function processUrls(_urls, depth = 0) {
         _urls
-        .filter(isntBlacklisted)
-        .forEach((url) => {
-            queue.push(async () => {
-                counter++
-                spinner.text = `Exporting ${counter} of ${urls.length} ${url.path}`
-                url.children = await urlToHtml(url.path)
+            .filter(isntBlacklisted)
+            .forEach((url) => {
+                queue.push(async () => {
+                    counter++
+                    spinner.text = `Exporting ${counter} of ${urls.length} ${url.path}`
+                    url.children = await urlToHtml(url.path)
 
-                if (depth < options.depth) {
-                    const newUrls = url.children
-                        .map(hrefToPath)
-                        .filter(isValidPath)
-                        .map(normalize(url))
-                        .filter(isUnique)
-                        .filter(isntBlacklisted)
-                    urls.push(...newUrls)
-                    processUrls(newUrls, depth + 1)
-                }
+                    if (depth < options.depth) {
+                        const newUrls = url.children
+                            .map(hrefToPath)
+                            .filter(isValidPath)
+                            .map(normalize(url))
+                            .filter(isUnique)
+                            .filter(isntBlacklisted)
+                        urls.push(...newUrls)
+                        processUrls(newUrls, depth + 1)
+                    }
+                })
             })
-        })
     }
 
     const time = Date.now()
@@ -132,9 +132,9 @@ function saveUrlToHtml(options) {
         const suffix = forceIndex && !url.endsWith('/index') ? '/index' : ''
         await outputFile(`${outputDir + url + suffix}.html`, html)
         const dom = parse(html)
-        return dom.querySelectorAll('a').map(s => (
-            { path: s.attributes.href }
-        ))
+        return dom.querySelectorAll('a')
+            .filter(s => s.attributes.href)
+            .map(s => ({ path: s.attributes.href }))
     }
 }
 

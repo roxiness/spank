@@ -19,11 +19,16 @@ async function start(options) {
     let counter = 0
 
     /** @type {Url[]} */
-    const urls = (
+    let urls = (
         Array.isArray(options.sitemap)
             ? [...options.sitemap]
             : require(resolve(process.cwd(), options.sitemap))
-    ).map(path => ({ path }))
+    )
+
+    urls = getVariations(urls, options.variations)
+    urls = urls.map(path => ({ path }))
+
+
 
     spinner = ora({ interval: 20 }).start()
 
@@ -167,6 +172,17 @@ function Queue(concurrency) {
         }
     }
     return this
+}
+
+function getVariations(urls, variations) {
+    if (!variations)
+        return urls
+    urls = urls.map(url =>
+        Array.isArray(variations)
+            ? variations.map(variation => `/${variation}${url}`)
+            : variations(url)
+    )
+    return [].concat(...urls)
 }
 
 module.exports = { start }

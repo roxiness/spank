@@ -1,17 +1,17 @@
 module.exports = {
     name: 'Svite / Routify 2',
     supersedes: ['routify2', 'routify'],
-    condition: ({ pkgjson }) => pkgjson.dependencies['svite'],
+    condition: ({ pkgjson }) => pkgjson.dependencies['@svitejs/vite-plugin-svelte'],
     config: () => {
         const { readFileSync } = require('fs')
-        const html = readFileSync('./dist/index.html', 'utf-8')
-        const script = html.match(/src="\/(_assets\/index.\w+.js)"/)[1]
+        const html = readFileSync('./dist/index.html', 'utf8')
+        const script = html.match(/<script .+?src="([^"]+)"/)[1]
         return {
-            script: `dist/${script}`,
+            sitemap: '.routify/urlIndex.json',
+            script: `dist${script}`,
             entrypoint: 'dist/index.html',
             inlineDynamicImports: true,
-            sitemap: '.routify/urlIndex.json',
-            output: 'dist',
+            outputDir: 'dist',
             eventName: 'app-loaded',
         }
     }

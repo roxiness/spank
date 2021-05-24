@@ -134,7 +134,6 @@ function createSaveUrlToHtml(options, afterSave) {
         const html = await tossr(entrypoint, script, url, { silent: true, eventName, host, inlineDynamicImports, ...ssrOptions })
         const suffix = forceIndex && !url.endsWith('/index') ? '/index' : ''
         const saveRootIndex = () => outputFile(`${outputDir + url + suffix}.html`, html)
-        console.log(url)
         if (url !== '/index')
             await saveRootIndex()
         else afterSave.saveRootIndex = saveRootIndex

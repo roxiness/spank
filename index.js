@@ -2,21 +2,25 @@
 /** @typedef {{path: string, children?: Url[]}} Url */
 
 const { resolve } = require('path')
-const { outputFile } = require('fs-extra')
+const { outputFile, copyFileSync } = require('fs-extra')
 const { tossr, inlineScript } = require('tossr')
 const { parse } = require('node-html-parser')
 const { getConfig } = require('./getConfig')
 
 const ora = require('ora');
+const { readFileSync } = require('fs')
 let spinner
 
 /** @param {Options} options */
 async function start(options) {
-    options = await getConfig(options)
+    options = await getConfig(options)    
     const queue = new Queue(options.concurrently)
     const hostname = options.host.match(/^https?:\/\/([^/]+)/)[1]
     const originRe = new RegExp(`^(https?:)?\/\/${hostname}`)
     let counter = 0
+
+    if(options.copyEntrypointTo)
+        outputFile(options.copyEntrypointTo, readFileSync(options.entrypoint))
 
     /** @type {Url[]} */
     const urls = (

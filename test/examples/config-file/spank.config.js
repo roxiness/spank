@@ -9,5 +9,6 @@ module.exports = {
         '/bar',
         '/baz'
     ],
-    blacklist: ['/link2', /\/link[3|4]/]
+    blacklist: ['/link2', /\/link[3|4]/],
+    copyEntrypointTo: 'output/__template.html'
 }

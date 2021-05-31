@@ -11,6 +11,7 @@ module.exports = {
     host: 'http://jsdom.ssr',
     depth: 2,
     writeSummary: false,
+    copyEntrypointTo: null,
     ssrOptions: {
         beforeEval: dom => {
             const scriptElem = dom.window.document.createElement('script')

@@ -4,6 +4,7 @@ module.exports = {
     script: 'dist/build/bundle.js',
     forceIndex: true,
     sitemap: ['/'],
+    /** @type {(string|RegExp)[]} */
     blacklist: [],
     inlineDynamicImports: false,
     concurrently: 3,

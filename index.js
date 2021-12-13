@@ -11,9 +11,17 @@ const ora = require('ora');
 const { readFileSync } = require('fs')
 let spinner
 
+/**
+ * @param {string | RegExp} str
+ * @returns {RegExp}
+ */
+const makeRegex = str =>
+    str instanceof RegExp ? str : new RegExp(`^${str.replace(/\*/, '(.+?)')}$`)
+
 /** @param {Options} options */
 async function start(options) {
     options = await getConfig(options)    
+    const blacklist = options.blacklist.map(makeRegex)
     const queue = new Queue(options.concurrently)
     const hostname = options.host.match(/^https?:\/\/([^/]+)/)[1]
     const originRe = new RegExp(`^(https?:)?\/\/${hostname}`)
@@ -38,17 +46,7 @@ async function start(options) {
     const isUnique = url => !urls.find(oldUrl => short(url) === short(oldUrl))
 
     /** @param {Url} url */
-    const isntBlacklisted = url =>
-        !options.blacklist.some(e => {
-            if (typeof e == "string") {
-                return e == url.path;
-            } else if (e instanceof RegExp) {
-                return e.test(url.path);
-            } else {
-                console.warn("config option 'blacklist' should contain only strings and/or regular expressions");
-                return true; // Ignore non string or regex backlist item 
-            }
-        })
+    const isntBlacklisted = url => !blacklist.some(e => e.test(url.path))
 
     /** @param {Url} url */
     const isValidPath = url =>

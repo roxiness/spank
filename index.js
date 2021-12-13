@@ -2,12 +2,12 @@
 /** @typedef {{path: string, children?: Url[]}} Url */
 
 const { resolve } = require('path')
-const { outputFile, copyFileSync } = require('fs-extra')
+const { outputFile } = require('fs-extra')
 const { tossr, inlineScript } = require('tossr')
 const { parse } = require('node-html-parser')
 const { getConfig } = require('./getConfig')
 
-const ora = require('ora');
+const ora = require('ora')
 const { readFileSync } = require('fs')
 let spinner
 
@@ -20,14 +20,14 @@ const makeRegex = str =>
 
 /** @param {Options} options */
 async function start(options) {
-    options = await getConfig(options)    
+    options = await getConfig(options)
     const blacklist = options.blacklist.map(makeRegex)
     const queue = new Queue(options.concurrently)
     const hostname = options.host.match(/^https?:\/\/([^/]+)/)[1]
     const originRe = new RegExp(`^(https?:)?\/\/${hostname}`)
     let counter = 0
 
-    if(options.copyEntrypointTo)
+    if (options.copyEntrypointTo)
         outputFile(options.copyEntrypointTo, readFileSync(options.entrypoint))
 
     /** @type {Url[]} */
@@ -50,10 +50,10 @@ async function start(options) {
 
     /** @param {Url} url */
     const isValidPath = url =>
-        // we don't want `mailto:mail.example.com` or `http://example.com` 
-        !url.path.match(/^[a-z0-9]+\:/)
+        // we don't want `mailto:mail.example.com` or `http://example.com`
+        !url.path.match(/^[a-z0-9]+\:/) &&
         // or `//example.com`
-        && !url.path.startsWith('//')
+        !url.path.startsWith('//')
 
     /** @param {Url} url */
     const hrefToPath = url => ({ ...url, path: url.path.replace(originRe, '') })
@@ -73,42 +73,41 @@ async function start(options) {
     const afterSave = {}
     const saveUrlToHtml = createSaveUrlToHtml(options, afterSave)
 
-    if (options.inlineDynamicImports)
-        await inlineScript(options.script)
+    if (options.inlineDynamicImports) await inlineScript(options.script)
     processUrls(urls)
 
     /** @param {Url[]} _urls */
     function processUrls(_urls, depth = 0) {
-        _urls
-            .filter(isntBlacklisted)
-            .forEach((url) => {
-                queue.push(async () => {
-                    counter++
-                    spinner.text = `Exporting ${counter} of ${urls.length} ${url.path}`
-                    url.children = await saveUrlToHtml(url.path)
+        _urls.filter(isntBlacklisted).forEach(url => {
+            queue.push(async () => {
+                counter++
+                spinner.text = `Exporting ${counter} of ${urls.length} ${url.path}`
+                url.children = await saveUrlToHtml(url.path)
 
-                    if (depth < options.depth) {
-                        const newUrls = url.children
-                            .map(hrefToPath)
-                            .filter(isValidPath)
-                            .map(normalize(url))
-                            .filter(isUnique)
-                            .filter(isntBlacklisted)
-                        urls.push(...newUrls)
-                        processUrls(newUrls, depth + 1)
-                    }
-                })
+                if (depth < options.depth) {
+                    const newUrls = url.children
+                        .map(hrefToPath)
+                        .filter(isValidPath)
+                        .map(normalize(url))
+                        .filter(isUnique)
+                        .filter(isntBlacklisted)
+                    urls.push(...newUrls)
+                    processUrls(newUrls, depth + 1)
+                }
             })
+        })
     }
 
     const time = Date.now()
-    await new Promise((resolve) => { queue.done = () => resolve() })
-    if (afterSave.saveRootIndex)
-        await afterSave.saveRootIndex()
-    spinner.succeed(`Exported ${counter} pages (${urls.length - counter} ignored) from total ${urls.length} pages in ${Date.now() - time} ms`)
+    await new Promise(resolve => (queue.done = () => resolve()))
+    if (afterSave.saveRootIndex) await afterSave.saveRootIndex()
+    spinner.succeed(
+        `Exported ${counter} pages (${urls.length - counter} ignored) from total ${
+            urls.length
+        } pages in ${Date.now() - time} ms`,
+    )
 
-    if (options.writeSummary)
-        writeSummary(urls, options)
+    if (options.writeSummary) writeSummary(urls, options)
 }
 
 /**
@@ -117,44 +116,62 @@ async function start(options) {
  */
 function writeSummary(urls, options) {
     const path = options.writeSummary.toString().replace(/^true$/, 'spank-summary.json')
-    outputFile(path, JSON.stringify({
-        time: new Date(),
-        options,
-        exports: urls.length,
-        list: urls.map(url => url.path),
-        discovery: urls,
-    }, null, 2))
+    outputFile(
+        path,
+        JSON.stringify(
+            {
+                time: new Date(),
+                options,
+                exports: urls.length,
+                list: urls.map(url => url.path),
+                discovery: urls,
+            },
+            null,
+            2,
+        ),
+    )
 }
-
 
 /** @param {Options} options */
 function createSaveUrlToHtml(options, afterSave) {
-    const { entrypoint, script, outputDir, forceIndex, eventName, host, ssrOptions, inlineDynamicImports } = options
+    const {
+        entrypoint,
+        script,
+        outputDir,
+        forceIndex,
+        eventName,
+        host,
+        ssrOptions,
+        inlineDynamicImports,
+    } = options
 
     /** @param {string} url */
     return async function saveUrlToHtml(url) {
-        const html = await tossr(entrypoint, script, url, { silent: true, eventName, host, inlineDynamicImports, ...ssrOptions })
+        const html = await tossr(entrypoint, script, url, {
+            silent: true,
+            eventName,
+            host,
+            inlineDynamicImports,
+            ...ssrOptions,
+        })
         const suffix = forceIndex && !url.endsWith('/index') ? '/index' : ''
         const saveRootIndex = () => outputFile(`${outputDir + url + suffix}.html`, html)
-        if (url !== '/index')
-            await saveRootIndex()
+        if (url !== '/index') await saveRootIndex()
         else afterSave.saveRootIndex = saveRootIndex
         const dom = parse(html)
-        return dom.querySelectorAll('a')
+        return dom
+            .querySelectorAll('a')
             .filter(s => s.attributes.href)
             .map(s => ({ path: s.attributes.href }))
     }
 }
-
-
-
 
 /** @param {number} concurrency */
 function Queue(concurrency) {
     /** @type {function[]} */
     const queue = []
     let freeSlots = concurrency
-    this.done = () => { }
+    this.done = () => {}
     const _this = this
 
     /** @param {function=} fn */

@@ -37,5 +37,20 @@
       "**/output",
       "**/spank-summary.json"
     ]
+  },
+  "prettier": {
+    "singleQuote": true,
+    "quoteProps": "as-needed",
+    "trailingComma": "all",
+    "bracketSpacing": true,
+    "arrowParens": "avoid",
+    "semi": false,
+    "useTabs": false,
+    "tabWidth": 4,
+    "printWidth": 90,
+    "svelteSortOrder": "options-scripts-markup-styles",
+    "svelteAllowShorthand": true,
+    "svelteBracketNewLine": false,
+    "svelteIndentScriptAndStyle": true
   }
 }

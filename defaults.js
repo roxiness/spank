@@ -1,18 +1,15 @@
 module.exports = {
     outputDir: 'dist',
-    entrypoint: 'dist/__app.html',
-    script: 'dist/build/bundle.js',
+    template: 'dist/__app.html',
     forceIndex: true,
     sitemap: ['/'],
     /** @type {(string|RegExp)[]} */
     blacklist: [],
-    inlineDynamicImports: false,
     concurrently: 3,
-    eventName: "",
-    host: 'http://jsdom.ssr',
+    host: 'http://localhost',
     depth: 2,
     writeSummary: false,
-    copyEntrypointTo: null,
+    copyTemplateTo: null,
     ssrOptions: {
         beforeEval: dom => {
             const scriptElem = dom.window.document.createElement('script')

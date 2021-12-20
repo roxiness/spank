@@ -6,6 +6,7 @@ const { outputFile } = require('fs-extra')
 const { tossr, inlineScript } = require('tossr')
 const { parse } = require('node-html-parser')
 const { getConfig } = require('./getConfig')
+const defaults = require('./defaults')
 
 const ora = require('ora')
 const { readFileSync } = require('fs')
@@ -20,15 +21,15 @@ const makeRegex = str =>
 
 /** @param {Options} options */
 async function start(options) {
-    options = await getConfig(options)
+    options = {...defaults, ...(await getConfig(options))}
     const blacklist = options.blacklist.map(makeRegex)
     const queue = new Queue(options.concurrently)
     const hostname = options.host.match(/^https?:\/\/([^/]+)/)[1]
     const originRe = new RegExp(`^(https?:)?\/\/${hostname}`)
     let counter = 0
 
-    if (options.copyEntrypointTo)
-        outputFile(options.copyEntrypointTo, readFileSync(options.entrypoint))
+    if (options.copytemplateTo)
+        outputFile(options.copytemplateTo, readFileSync(options.template))
 
     /** @type {Url[]} */
     const urls = (
@@ -135,8 +136,7 @@ function writeSummary(urls, options) {
 /** @param {Options} options */
 function createSaveUrlToHtml(options, afterSave) {
     const {
-        entrypoint,
-        script,
+        template,
         outputDir,
         forceIndex,
         eventName,
@@ -147,7 +147,7 @@ function createSaveUrlToHtml(options, afterSave) {
 
     /** @param {string} url */
     return async function saveUrlToHtml(url) {
-        const html = await tossr(entrypoint, script, url, {
+        const html = await tossr(template, url, {
             silent: true,
             eventName,
             host,

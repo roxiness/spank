@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-1](https://github.com/roxiness/spank/compare/v2.0.0-0...v2.0.0-1) (2022-06-07)
+
+
+### Bug Fixes
+
+* cleanup console.logs ([033854f](https://github.com/roxiness/spank/commit/033854f154dd02406efe8297e17bcb78c956394e))
+* cleanup console.logs ([17a0bde](https://github.com/roxiness/spank/commit/17a0bdedef6b076b5039fcb7fd1cd18e28ccf9a1))
+
 ## [2.0.0-0](https://github.com/roxiness/spank/compare/v1.9.0...v2.0.0-0) (2022-06-07)
 
 

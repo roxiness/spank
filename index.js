@@ -88,7 +88,6 @@ async function start(options) {
 
     queue.onDone(() => saveRootFile())
 
-    console.log(options)
     const renderer = getRenderer(options.renderer)
 
     /** @param {string[]} _urls */

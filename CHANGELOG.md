@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-2](https://github.com/roxiness/spank/compare/v2.0.0-1...v2.0.0-2) (2022-06-07)
+
+
+### Bug Fixes
+
+* better handling of routify 3 native ([aeb9560](https://github.com/roxiness/spank/commit/aeb956097fa3b9ad029172df0ead74f0a5d9f142))
+
 ## [2.0.0-1](https://github.com/roxiness/spank/compare/v2.0.0-0...v2.0.0-1) (2022-06-07)
 
 

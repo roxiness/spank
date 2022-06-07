@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-0](https://github.com/roxiness/spank/compare/v1.9.0...v2.0.0-0) (2022-06-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* support custom renderer
+
+### Features
+
+* routify3 ([e92a8d7](https://github.com/roxiness/spank/commit/e92a8d73a53b83d16c12a6e4162fffda85e8db01))
+* support custom renderer ([c5b13dc](https://github.com/roxiness/spank/commit/c5b13dc763dc3bc59d959fd5f86703c0d62cb86e))
+
 ## [1.9.0](https://github.com/roxiness/spank/compare/v1.8.0...v1.9.0) (2021-12-13)
 
 

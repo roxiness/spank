@@ -5,11 +5,7 @@ async function routify3native(template, script, url) {
     await app.load(url)
     const { html, head, css } = app.default.render()
 
-    console.log(template, existsSync(template))
-
     template = existsSync(template) ? readFileSync(template, 'utf-8') : template
-
-    console.log('new template', template)
 
     const re = template
         .replace('<!--ssr:html-->', html)

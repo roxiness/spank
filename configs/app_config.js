@@ -1,5 +1,5 @@
 const map = {
-    template: 'entrypoint',
+    template: 'template',
     distDir: 'outputDir',
     assets: 'assetsDir',
 }

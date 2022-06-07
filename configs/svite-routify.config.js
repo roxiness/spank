@@ -5,13 +5,13 @@ module.exports = {
     config: () => {
         const config = {
             sitemap: '.routify/urlIndex.json',
-            entrypoint: 'dist/index.html',
+            template: 'dist/index.html',
             inlineDynamicImports: true,
             outputDir: 'dist',
             eventName: 'app-loaded',
         }
 
-        const script = getScript(config.entrypoint)
+        const script = getScript(config.template)
         if (script)
             config.script = `dist${script}`
 
@@ -19,9 +19,9 @@ module.exports = {
     }
 }
 
-function getScript(entrypoint) {
+function getScript(template) {
     const { readFileSync, existsSync } = require('fs')
-    if (existsSync(entrypoint))
-        return readFileSync(entrypoint, 'utf8')
+    if (existsSync(template))
+        return readFileSync(template, 'utf8')
             .match(/<script .+?src="([^"]+)"/)[1]
 }

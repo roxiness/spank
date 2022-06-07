@@ -8,10 +8,10 @@ module.exports = {
         const script = html.match(/src="\/(_assets\/index.\w+.js)"/)[1]
         return {
             script: `dist/${script}`,
-            entrypoint: 'dist/index.html',
+            template: 'dist/index.html',
             inlineDynamicImports: true,
             sitemap: '.routify/urlIndex.json',
-            output: 'dist',
+            outputDir: 'dist',
             eventName: 'app-loaded',
         }
     }

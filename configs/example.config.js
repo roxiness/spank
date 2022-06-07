@@ -16,8 +16,8 @@ module.exports = {
      */
     config: () => ({
         sitemap: 'sitemap.json',
-        output: 'dist',
-        entrypoint: 'assets/index.html',
+        outputDir: 'dist',
+        template: 'assets/index.html',
         script: 'dist/build/bundle.js',
     })
 }

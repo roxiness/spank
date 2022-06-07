@@ -11,7 +11,7 @@
 //spank.config.js
 module.exports = {
   sitemap: 'path/to/a-list-of-urls.json',
-  entrypoint: 'dist/__index.html',
+  template: 'dist/__index.html',
   script: 'dist/main.js',
   outputDir: 'dist'
 }
@@ -32,7 +32,7 @@ spank can also be used without a config. Use `npx spank --help` for parameters.
 | prop |default| description |
 |------|-|-------------|
 |sitemap|| .js or .json file with a list of relative paths. Eg. `['/', '/about', '/contact']`|
-|entrypoint|`dist/__app.html`| path to the HTML template to render the SPA in. Often `static/index.html`|
+|template|`dist/__app.html`| path to the HTML template to render the SPA in. Often `static/index.html`|
 |script|`dist/build/bundle.js`| Path to the app script. Often `dist/build/bundle.js` or `dist/build/main.js`|
 |outputDir|`dist`| Folder to save HTML files to.|
 |forceIndex|`false`| Write `/about` to `about/index.html` instead of `about.html`|

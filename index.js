@@ -3,13 +3,30 @@
 
 const { resolve } = require('path')
 const { outputFile } = require('fs-extra')
-const { tossr, inlineScript } = require('tossr')
 const { parse } = require('node-html-parser')
 const { getConfig } = require('./getConfig')
 
 const ora = require('ora')
 const { readFileSync } = require('fs')
 let spinner
+
+const getRenderer = renderer => {
+    const resolvers = [
+        () => require(`${process.cwd()}`),
+        () => require(`${process.cwd()}`).default,
+        () => require(`./renderers/${renderer}`)[renderer],
+        () => require(renderer)[renderer],
+        () => require(renderer).default,
+        () => require(renderer),
+    ]
+
+    for (const resolver of resolvers)
+        try {
+            return resolver()
+        } catch (_err) {}
+
+    throw new Error(`Could not find renderer: ${renderer}`)
+}
 
 /**
  * @param {string | RegExp} str
@@ -21,71 +38,74 @@ const makeRegex = str =>
 /** @param {Options} options */
 async function start(options) {
     options = await getConfig(options)
+    
     const blacklist = options.blacklist.map(makeRegex)
     const queue = new Queue(options.concurrently)
-    const hostname = options.host.match(/^https?:\/\/([^/]+)/)[1]
+    const hostname = options.host?.match(/^https?:\/\/([^/]+)/)[1]
     const originRe = new RegExp(`^(https?:)?\/\/${hostname}`)
     let counter = 0
 
-    if (options.copyEntrypointTo)
-        outputFile(options.copyEntrypointTo, readFileSync(options.entrypoint))
+    if (options.copyTemplateTo)
+        outputFile(options.copyTemplateTo, readFileSync(options.template))
 
-    /** @type {Url[]} */
-    const urls = (
-        Array.isArray(options.sitemap)
-            ? [...options.sitemap]
-            : require(resolve(process.cwd(), options.sitemap))
-    ).map(path => ({ path }))
+    /** @type {string[]} */
+    const urls = Array.isArray(options.sitemap)
+        ? [...options.sitemap]
+        : require(resolve(process.cwd(), options.sitemap))
 
     spinner = ora({ interval: 20 }).start()
 
-    /** @param {Url} url */
-    const short = url => url.path.replace(/\/index$/, '')
+    /** @param {string} url */
+    const short = url => url.replace(/\/index$/, '')
 
-    /** @param {Url} url */
+    /** @param {string} url */
     const isUnique = url => !urls.find(oldUrl => short(url) === short(oldUrl))
 
-    /** @param {Url} url */
-    const isntBlacklisted = url => !blacklist.some(e => e.test(url.path))
+    /** @param {string} url */
+    const isntBlacklisted = url => !blacklist.some(e => e.test(url))
 
-    /** @param {Url} url */
+    /** @param {string} url */
     const isValidPath = url =>
         // we don't want `mailto:mail.example.com` or `http://example.com`
-        !url.path.match(/^[a-z0-9]+\:/) &&
+        !url.match(/^[a-z0-9]+\:/) &&
         // or `//example.com`
-        !url.path.startsWith('//')
+        !url.startsWith('//')
 
-    /** @param {Url} url */
-    const hrefToPath = url => ({ ...url, path: url.path.replace(originRe, '') })
+    /** @param {string} url */
+    const hrefToPath = url => url.replace(originRe, '')
 
-    /** @param {Url} parent */
-    const normalize = parent => url => {
-        url.path = url.path
+    /** @param {string} parent */
+    const normalize = parent => url =>
+        url
             .replace(originRe, '')
-            .replace(/^([^/].*)/, `${parent.path}/$1`) // if path is relative, path = parent.path + / + path
-            .replace(/^\/$/, '/index') // root should be named index
+            .replace(/^\.\//, '') // normalize "./relative" urls to "relative"
+            .replace(/^([^/])/, `${parent}/$1`) // prefix all relative urls with their parent
             .replace(/#.*/, '') // discard anything after a #
             .replace(/\/$/, '') // remove trailing slashes
 
-        return url
-    }
+    // this function should get overwritten by processUrls
+    let saveRootFile = () => console.warn('[spank] found no root index.html file')
 
-    const afterSave = {}
-    const saveUrlToHtml = createSaveUrlToHtml(options, afterSave)
+    queue.onDone(() => saveRootFile())
 
-    if (options.inlineDynamicImports) await inlineScript(options.script)
-    processUrls(urls)
+    console.log(options)
+    const renderer = getRenderer(options.renderer)
 
-    /** @param {Url[]} _urls */
-    function processUrls(_urls, depth = 0) {
+    /** @param {string[]} _urls */
+    const processUrls = (_urls, depth = 0) => {
         _urls.filter(isntBlacklisted).forEach(url => {
             queue.push(async () => {
                 counter++
-                spinner.text = `Exporting ${counter} of ${urls.length} ${url.path}`
-                url.children = await saveUrlToHtml(url.path)
+                spinner.text = `Exporting ${counter} of ${urls.length} ${url}`
+                const parsedUrl = await parseUrl(url, renderer, options)
+                const saveFile = () =>
+                    outputFile(`${options.outputDir + parsedUrl.file}`, parsedUrl.html)
+
+                if (parsedUrl.url === '/index') saveRootFile = saveFile
+                else await saveFile()
 
                 if (depth < options.depth) {
-                    const newUrls = url.children
+                    const newUrls = parsedUrl.urls
                         .map(hrefToPath)
                         .filter(isValidPath)
                         .map(normalize(url))
@@ -98,9 +118,11 @@ async function start(options) {
         })
     }
 
+    
+    processUrls(urls)
+
     const time = Date.now()
-    await new Promise(resolve => (queue.done = () => resolve()))
-    if (afterSave.saveRootIndex) await afterSave.saveRootIndex()
+    await new Promise(resolve => queue.onDone(resolve))
     spinner.succeed(
         `Exported ${counter} pages (${urls.length - counter} ignored) from total ${
             urls.length
@@ -111,7 +133,7 @@ async function start(options) {
 }
 
 /**
- * @param {Url[]} urls
+ * @param {string[]} urls
  * @param {Options} options
  */
 function writeSummary(urls, options) {
@@ -123,55 +145,48 @@ function writeSummary(urls, options) {
                 time: new Date(),
                 options,
                 exports: urls.length,
-                list: urls.map(url => url.path),
-                discovery: urls,
+                list: urls,
             },
             null,
             2,
         ),
     )
 }
+/**
+ * returns html, nested urls
+ * @param {string} url½
+ * @param {(template: string, script: string, url: string, options: any)=>string} renderer
+ * @param {Options} options
+ * @returns {Promise<{html: string, urls: string[], url: string, file: string}>}
+ */
+async function parseUrl(url, renderer, options) {
+    const { template, script } = options
 
-/** @param {Options} options */
-function createSaveUrlToHtml(options, afterSave) {
-    const {
-        entrypoint,
-        script,
-        outputDir,
-        forceIndex,
-        eventName,
-        host,
-        ssrOptions,
-        inlineDynamicImports,
-    } = options
+    const html = await renderer(template, script, url, options.renderOptions)
 
-    /** @param {string} url */
-    return async function saveUrlToHtml(url) {
-        const html = await tossr(entrypoint, script, url, {
-            silent: true,
-            eventName,
-            host,
-            inlineDynamicImports,
-            ...ssrOptions,
-        })
-        const suffix = forceIndex && !url.endsWith('/index') ? '/index' : ''
-        const saveRootIndex = () => outputFile(`${outputDir + url + suffix}.html`, html)
-        if (url !== '/index') await saveRootIndex()
-        else afterSave.saveRootIndex = saveRootIndex
-        const dom = parse(html)
-        return dom
-            .querySelectorAll('a')
-            .filter(s => s.attributes.href)
-            .map(s => ({ path: s.attributes.href }))
+    const dom = parse(html)
+    const urls = dom
+        .querySelectorAll('a')
+        .filter(s => s.attributes.href)
+        .map(s => s.attributes.href)
+
+    return {
+        url,
+        urls,
+        html,
+        file: url.replace(/\/index$/, '') + '/index.html',
     }
 }
 
 /** @param {number} concurrency */
 function Queue(concurrency) {
     /** @type {function[]} */
+    const onDoneHooks = []
+
+    /** @type {function[]} */
     const queue = []
     let freeSlots = concurrency
-    this.done = () => {}
+    this.onDone = hook => onDoneHooks.push(hook)
     const _this = this
 
     /** @param {function=} fn */
@@ -188,7 +203,7 @@ function Queue(concurrency) {
             runAll()
         }
         if (!queue.length && concurrency - freeSlots === 0) {
-            _this.done()
+            for (const hook of onDoneHooks) await hook()
         }
     }
     return this

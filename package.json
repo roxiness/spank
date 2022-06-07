@@ -18,11 +18,10 @@
   "dependencies": {
     "chalk": "^4.1.0",
     "commander": "^6.1.0",
-    "configent": "^2.2.0",
+    "configent": "^3.0.0-2",
     "fs-extra": "^9.0.1",
     "node-html-parser": "^1.2.21",
     "ora": "^5.1.0",
-    "rollup": "^2.28.0",
     "tossr": "^1.4.1"
   },
   "devDependencies": {

@@ -1,24 +1,25 @@
 module.exports = {
-    outputDir: 'dist',
-    entrypoint: 'dist/__app.html',
+    outputDir: 'dist/client',
+    template: 'dist/__app.html',
     script: 'dist/build/bundle.js',
     forceIndex: true,
     sitemap: ['/'],
     /** @type {(string|RegExp)[]} */
     blacklist: [],
-    inlineDynamicImports: false,
     concurrently: 3,
     eventName: "",
-    host: 'http://jsdom.ssr',
     depth: 2,
     writeSummary: false,
-    copyEntrypointTo: null,
-    ssrOptions: {
+    copyTemplateTo: null,
+    renderer: 'tossr',
+    /** @type {any} */
+    renderOptions: {
+        eventName: 'app-loaded',
         beforeEval: dom => {
             const scriptElem = dom.window.document.createElement('script')
             scriptElem.innerHTML = 'window.__preRendered = true'
             dom.window.__preRendered = true
             dom.window.document.head.appendChild(scriptElem)
         }
-    }
+    },
 }

@@ -48,10 +48,21 @@ async function start(options) {
     if (options.copyTemplateTo)
         outputFile(options.copyTemplateTo, readFileSync(options.template))
 
+    /** @param {string} parent */
+    const normalize = parent => url =>
+        url
+            .replace(originRe, '')
+            .replace(/^\.\//, '') // normalize "./relative" urls to "relative"
+            .replace(/^([^/])/, `${parent}/$1`) // prefix all relative urls with their parent
+            .replace(/#.*/, '') // discard anything after a #
+            .replace(/\/$/, '') // remove trailing slashes
+
     /** @type {string[]} */
-    const urls = Array.isArray(options.sitemap)
+    const rawUrls = Array.isArray(options.sitemap)
         ? [...options.sitemap]
         : require(resolve(process.cwd(), options.sitemap))
+
+    const urls = rawUrls.map(normalize(''))
 
     spinner = ora({ interval: 20 }).start()
 
@@ -73,15 +84,6 @@ async function start(options) {
 
     /** @param {string} url */
     const hrefToPath = url => url.replace(originRe, '')
-
-    /** @param {string} parent */
-    const normalize = parent => url =>
-        url
-            .replace(originRe, '')
-            .replace(/^\.\//, '') // normalize "./relative" urls to "relative"
-            .replace(/^([^/])/, `${parent}/$1`) // prefix all relative urls with their parent
-            .replace(/#.*/, '') // discard anything after a #
-            .replace(/\/$/, '') // remove trailing slashes
 
     // this function should get overwritten by processUrls
     let saveRootFile = () => console.warn('[spank] found no root index.html file')
@@ -117,7 +119,7 @@ async function start(options) {
         })
     }
 
-    
+
     processUrls(urls)
 
     const time = Date.now()

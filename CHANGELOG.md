@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0-4](https://github.com/roxiness/spank/compare/v2.0.0-3...v2.0.0-4) (2022-06-12)
+
+
+### Bug Fixes
+
+* / was different from /index ([058c271](https://github.com/roxiness/spank/commit/058c271abf29dc789a2b544f9d7e1570fad6eed2))
+* broken auto config handling ([4371e47](https://github.com/roxiness/spank/commit/4371e472a1ecd3fa91b3b77a5d6ea523873f8720))
+
 ## [2.0.0-3](https://github.com/roxiness/spank/compare/v2.0.0-2...v2.0.0-3) (2022-06-11)
 
 

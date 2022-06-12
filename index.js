@@ -8,6 +8,7 @@ const { getConfig } = require('./getConfig')
 
 const ora = require('ora')
 const { readFileSync } = require('fs')
+const { isNotIn, isUnique } = require('./utils')
 let spinner
 
 const getRenderer = renderer => {
@@ -28,6 +29,15 @@ const getRenderer = renderer => {
     throw new Error(`Could not find renderer: ${renderer}`)
 }
 
+/** @param {string} url */
+const isValidPath = url =>
+    // we don't want `mailto:mail.example.com` or `http://example.com`
+    !url.match(/^[a-z0-9]+\:/) &&
+    // or `//example.com`
+    !url.startsWith('//')
+
+const hrefToPath = originRe => url => url.replace(originRe, '')
+
 /**
  * @param {string | RegExp} str
  * @returns {RegExp}
@@ -38,7 +48,7 @@ const makeRegex = str =>
 /** @param {Options} options */
 async function start(options) {
     options = await getConfig(options)
-    
+
     const blacklist = options.blacklist.map(makeRegex)
     const queue = new Queue(options.concurrently)
     const hostname = options.host?.match(/^https?:\/\/([^/]+)/)[1]
@@ -55,7 +65,8 @@ async function start(options) {
             .replace(/^\.\//, '') // normalize "./relative" urls to "relative"
             .replace(/^([^/])/, `${parent}/$1`) // prefix all relative urls with their parent
             .replace(/#.*/, '') // discard anything after a #
-            .replace(/\/$/, '') // remove trailing slashes
+            .replace(/\/*$/, '') // remove trailing slashes
+            .replace(/\/index$/, '') // remove index
 
     /** @type {string[]} */
     const rawUrls = Array.isArray(options.sitemap)
@@ -67,23 +78,7 @@ async function start(options) {
     spinner = ora({ interval: 20 }).start()
 
     /** @param {string} url */
-    const short = url => url.replace(/\/index$/, '')
-
-    /** @param {string} url */
-    const isUnique = url => !urls.find(oldUrl => short(url) === short(oldUrl))
-
-    /** @param {string} url */
     const isntBlacklisted = url => !blacklist.some(e => e.test(url))
-
-    /** @param {string} url */
-    const isValidPath = url =>
-        // we don't want `mailto:mail.example.com` or `http://example.com`
-        !url.match(/^[a-z0-9]+\:/) &&
-        // or `//example.com`
-        !url.startsWith('//')
-
-    /** @param {string} url */
-    const hrefToPath = url => url.replace(originRe, '')
 
     // this function should get overwritten by processUrls
     let saveRootFile = () => console.warn('[spank] found no root index.html file')
@@ -102,16 +97,17 @@ async function start(options) {
                 const saveFile = () =>
                     outputFile(`${options.outputDir + parsedUrl.file}`, parsedUrl.html)
 
-                if (parsedUrl.url === '/index') saveRootFile = saveFile
+                if (parsedUrl.url === '') saveRootFile = saveFile
                 else await saveFile()
 
                 if (depth < options.depth) {
                     const newUrls = parsedUrl.urls
-                        .map(hrefToPath)
+                        .map(hrefToPath(originRe))
                         .filter(isValidPath)
                         .map(normalize(url))
-                        .filter(isUnique)
                         .filter(isntBlacklisted)
+                        .filter(isNotIn(urls))
+                        .filter(isUnique)
                     urls.push(...newUrls)
                     processUrls(newUrls, depth + 1)
                 }
@@ -119,15 +115,14 @@ async function start(options) {
         })
     }
 
-
     processUrls(urls)
 
     const time = Date.now()
     await new Promise(resolve => queue.onDone(resolve))
     spinner.succeed(
-        `Exported ${counter} pages (${urls.length - counter} ignored) from total ${
-            urls.length
-        } pages in ${Date.now() - time} ms`,
+        `[spank] Exported ${counter} pages (${
+            urls.length - counter
+        } ignored) from total ${urls.length} pages in ${Date.now() - time} ms`,
     )
 
     if (options.writeSummary) writeSummary(urls, options)
@@ -175,7 +170,7 @@ async function parseUrl(url, renderer, options) {
         url,
         urls,
         html,
-        file: url.replace(/\/index$/, '') + '/index.html',
+        file: url + '/index.html',
     }
 }
 

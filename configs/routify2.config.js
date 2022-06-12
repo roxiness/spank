@@ -1,6 +1,6 @@
 module.exports = {
     name: 'Routify 2',
-    condition: ({ pkgjson }) => pkgjson.dependencies['@roxi/routify'].match(/^(\^|\~|\>\=)?2\./),
+    condition: ({ pkgjson }) => pkgjson.dependencies['@roxi/routify']?.match(/^(\^|\~|\>\=)?2\./),
     config: () => {
         const hasBundle = require('fs-extra').existsSync('dist/build/bundle.js')
         return {

@@ -1,5 +1,5 @@
 {
     "dependencies": {
-        "@roxi/routify": "latest"
+        "@roxi/routify": "^2.18.7"
     }
 }

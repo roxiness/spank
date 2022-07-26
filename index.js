@@ -13,12 +13,19 @@ let spinner
 
 const getRenderer = async renderer => {
     const resolvers = [
-        () => import(`${process.cwd()}`).then(r => r[renderer]),
-        () => import(`./renderers/${renderer}`).then(r => r[renderer]),
+        // builtin renderers
+        () => import(`./renderers/${renderer}.js`).then(r => r[renderer]),
+        () => import(`./renderers/${renderer}.js`).then(r => r.default),
+        // user renderers
+        () =>
+            import(`file:///${process.cwd()}/renderers/${renderer}`).then(
+                r => r[renderer],
+            ),
+        () =>
+            import(`file:///${process.cwd()}/renderers/${renderer}`).then(r => r.default),
+        // modules
         () => import(renderer).then(r => r[renderer]),
         () => import(renderer).then(r => r.default),
-        () => import(`${process.cwd()}`).then(r => r.defalut),
-        () => import(`${process.cwd()}`),
         () => import(renderer),
     ]
 
@@ -26,7 +33,9 @@ const getRenderer = async renderer => {
         try {
             const res = await resolver()
             if (res) return res
-        } catch (_err) {}
+        } catch (_err) {
+            if (!_err.message.startsWith('Cannot find module')) throw _err
+        }
 
     throw new Error(`Could not find renderer: ${renderer}`)
 }
@@ -50,6 +59,7 @@ const makeRegex = str =>
 /** @param {Options['default']} options */
 export async function start(options) {
     options = await getConfig(options)
+    console.log('options', options)
 
     const blacklist = options.blacklist.map(makeRegex)
     const queue = new Queue(options.concurrently)
@@ -87,6 +97,7 @@ export async function start(options) {
 
     queue.onDone(() => saveRootFile())
 
+    console.log('optionsrenderer', options.renderer)
     const renderer = await getRenderer(options.renderer)
 
     /** @param {string[]} _urls */

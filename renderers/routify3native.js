@@ -1,5 +1,5 @@
-const { existsSync, readFileSync } = require('fs-extra')
-
+import fse from 'fs-extra'
+const { existsSync, readFileSync } = fse
 /**
  * Renders a single Routify 3 page
  * @param {string} template path to template (index.html)
@@ -7,11 +7,11 @@ const { existsSync, readFileSync } = require('fs-extra')
  * @param {string} url
  * @returns
  */
-async function routify3native(template, script, url) {
+export async function routify3native(template, script, url) {
     try {
         template = existsSync(template) ? readFileSync(template, 'utf-8') : template
-
-        const app = requireUncached(process.cwd() + '/' + script)
+        const path = 'file:///' + process.cwd() + '/' + script+'?url='+url
+        const app = await import(path)
         await app.load(url)
 
         const { html, head, css } = app.default.render()
@@ -25,10 +25,3 @@ async function routify3native(template, script, url) {
         return template.replace('<!--ssr:html-->', `<h3>failed to render "${url}"</h3>`)
     }
 }
-
-function requireUncached(path) {
-    delete require.cache[require.resolve(path)]
-    return require(path)
-}
-
-module.exports = { routify3native }

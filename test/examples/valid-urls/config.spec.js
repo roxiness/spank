@@ -1,16 +1,14 @@
-const test = require('ava').default
 const { readdirSync } = require('fs')
-const { cli } = require('../../utils')
+import { cli } from '../../utils.js'
 
-test('config file', t => {
-    const { verifyFile, exists } = cli(t, '', __dirname)
-
-    t.deepEqual(readdirSync(__dirname + '/output'), [
+test('config file', () => {
+    cli('', import.meta.url)
+    assert.deepEqual(readdirSync(import.meta.url + '/output'), [
         'foo',
         'index.html',
         'local-link',
         'local-link2',
         'relative-link',
-        'relative-vanilla'
+        'relative-vanilla',
     ])
 })

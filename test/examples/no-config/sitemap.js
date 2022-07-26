@@ -1,5 +1,1 @@
-module.exports = [
-    '/foo',
-    '/bar',
-    '/baz'
-]
+export default ['/foo', '/bar', '/baz']

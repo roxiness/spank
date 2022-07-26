@@ -1,9 +1,11 @@
-const { configent } = require('configent')
+import { configent } from 'configent'
 
-const defaults = require('./defaults')
+import defaults from './defaults.js'
 
-const getConfig = async input => {
-    return { ...defaults, ...configent({ useDetectDefaults: true, module }), ...input }
+export const getConfig = async input => {
+    return {
+        ...defaults,
+        ...await configent({ useDetectDefaults: true }),
+        ...input,
+    }
 }
-
-module.exports = { getConfig }

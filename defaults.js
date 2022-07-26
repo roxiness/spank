@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     outputDir: 'dist/client',
     template: 'dist/__app.html',
     script: 'dist/build/bundle.js',

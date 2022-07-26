@@ -1,10 +1,9 @@
-const test = require('ava').default
-const { cli } = require('../../utils')
-const { existsSync } = require('fs-extra')
+import { cli } from '../../utils.js'
+import fse from 'fs-extra'
 
-test('auto-config', t => {
-    const { resolve } = cli(t, '--output-dir output --write-summary', __dirname)
-    t.truthy(existsSync(resolve('local/index.html')))
-    t.truthy(existsSync(resolve('index.html')))
-    t.truthy(existsSync(resolve('foo/index.html')))
+test('auto-config', () => {
+    const { exists } = cli('--output-dir output --write-summary', import.meta.url)
+
+    assert(exists('index.html'))
+    assert(exists('local/index.html'))
 })

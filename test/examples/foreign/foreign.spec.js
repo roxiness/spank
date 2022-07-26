@@ -1,10 +1,8 @@
-const test = require('ava').default
-const { cli } = require('../../utils')
-const { existsSync } = require('fs-extra')
+import { cli } from '../../utils.js'
+test('foreign', () => {
+    const { exists } = cli('--depth 3', import.meta.url)
 
-test('foreign', t => {
-    const { resolve } = cli(t, '--depth 3', __dirname)
-    t.truthy(existsSync(resolve('local/index.html')))
-    t.truthy(existsSync(resolve('local-full/index.html')))
-    t.falsy(existsSync(resolve('foreign/index.html')))
+    assert(exists('local/index.html'))
+    assert(exists('local-full/index.html'))
+    assert(!exists('foreign/index.html'))
 })

@@ -1,29 +1,31 @@
 /** @typedef {import('./defaults')} Options */
 /** @typedef {{path: string, children?: Url[]}} Url */
 
-const { resolve } = require('path')
-const { outputFile } = require('fs-extra')
-const { parse } = require('node-html-parser')
-const { getConfig } = require('./getConfig')
+import { resolve } from 'path'
+import { outputFile } from 'fs-extra'
+import { parse } from 'node-html-parser'
+import { getConfig } from './getConfig.js'
 
-const ora = require('ora')
-const { readFileSync } = require('fs')
-const { isNotIn, isUnique } = require('./utils')
+import ora from 'ora'
+import { readFileSync } from 'fs'
+import { isNotIn, isUnique } from './utils.js'
 let spinner
 
-const getRenderer = renderer => {
+const getRenderer = async renderer => {
     const resolvers = [
-        () => require(`${process.cwd()}`),
-        () => require(`${process.cwd()}`).default,
-        () => require(`./renderers/${renderer}`)[renderer],
-        () => require(renderer)[renderer],
-        () => require(renderer).default,
-        () => require(renderer),
+        () => import(`${process.cwd()}`).then(r => r[renderer]),
+        () => import(`./renderers/${renderer}`).then(r => r[renderer]),
+        () => import(renderer).then(r => r[renderer]),
+        () => import(renderer).then(r => r.default),
+        () => import(`${process.cwd()}`).then(r => r.defalut),
+        () => import(`${process.cwd()}`),
+        () => import(renderer),
     ]
 
     for (const resolver of resolvers)
         try {
-            return resolver()
+            const res = await resolver()
+            if (res) return res
         } catch (_err) {}
 
     throw new Error(`Could not find renderer: ${renderer}`)
@@ -45,8 +47,8 @@ const hrefToPath = originRe => url => url.replace(originRe, '')
 const makeRegex = str =>
     str instanceof RegExp ? str : new RegExp(`^${str.replace(/\*/, '(.+?)')}$`)
 
-/** @param {Options} options */
-async function start(options) {
+/** @param {Options['default']} options */
+export async function start(options) {
     options = await getConfig(options)
 
     const blacklist = options.blacklist.map(makeRegex)
@@ -71,7 +73,7 @@ async function start(options) {
     /** @type {string[]} */
     const rawUrls = Array.isArray(options.sitemap)
         ? [...options.sitemap]
-        : require(resolve(process.cwd(), options.sitemap))
+        : await import('file:///' + resolve(options.sitemap)).then(r => r.default)
 
     const urls = rawUrls.map(normalize(''))
 
@@ -85,7 +87,7 @@ async function start(options) {
 
     queue.onDone(() => saveRootFile())
 
-    const renderer = getRenderer(options.renderer)
+    const renderer = await getRenderer(options.renderer)
 
     /** @param {string[]} _urls */
     const processUrls = (_urls, depth = 0) => {
@@ -157,7 +159,6 @@ function writeSummary(urls, options) {
  */
 async function parseUrl(url, renderer, options) {
     const { template, script } = options
-
     const html = await renderer(template, script, url, options.renderOptions)
 
     const dom = parse(html)
@@ -204,5 +205,3 @@ function Queue(concurrency) {
     }
     return this
 }
-
-module.exports = { start }

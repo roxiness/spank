@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-const { start } = require('./index')
-const program = require('commander');
+import { start } from './index.js'
+import program from 'commander'
 
+import {getConfig } from './getConfig.js'
 
 (async function cli() {
-    const defaults = await require('./getConfig').getConfig()
-
+    const defaults = await getConfig()
     program
         .option('-d, --debug', 'extra debugging')
         .option('-m, --sitemap <path to js/json>', 'array of relative URLs', defaults.sitemap)

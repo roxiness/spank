@@ -1,7 +1,7 @@
-const test = require('ava').default
-const { cli } = require('../../utils')
 
-test('config file', t => {
-    const { verifyFile } = cli(t, '', __dirname)
+import {cli} from '../../utils.js'
+
+test('config file', () => {
+    const { verifyFile } = cli('', import.meta.url)
     verifyFile('index.html', new RegExp('<div id="status">imported</div>'))
 })

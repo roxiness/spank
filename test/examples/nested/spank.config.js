@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     sitemap: 'sitemap.js',
     outputDir: 'output',
     template: 'dist/index.html',

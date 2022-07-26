@@ -1,13 +1,12 @@
-const { existsSync } = require('fs-extra')
+import fse from 'fs-extra'
+const { existsSync } = fse
 /**
  * returns first path that exists
  * @param {string[]} paths
  */
-const findFirstPath = paths => {
+export const findFirstPath = paths => {
     for (const path of paths) if (existsSync(path)) return path
 }
 
-const isNotIn = array => item => array.indexOf(item) === -1
-const isUnique = (item, index, array) => array.indexOf(item) === index
-
-module.exports = { findFirstPath, isNotIn, isUnique }
+export const isNotIn = array => item => array.indexOf(item) === -1
+export const isUnique = (item, index, array) => array.indexOf(item) === index

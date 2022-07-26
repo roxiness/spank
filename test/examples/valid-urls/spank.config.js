@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     outputDir: 'output',
     template: 'dist/index.html',
     script: 'dist/main.js',

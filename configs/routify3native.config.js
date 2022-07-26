@@ -1,4 +1,4 @@
-const { findFirstPath } = require('../utils')
+const { findFirstPath } = require('../utils.cjs')
 
 module.exports = {
     name: 'Routify 3 Native',

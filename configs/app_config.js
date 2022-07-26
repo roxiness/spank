@@ -5,7 +5,7 @@ const map = {
 }
 
 
-module.exports = {
+export default {
     name: 'appConfig',
     condition: ({ pkgjson }) => pkgjson.appConfig,
     supersedes: ['default', 'svite'],

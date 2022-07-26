@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'Svite legacy / Routify 2',
     supersedes: ['routify2', 'routify'],
     condition: ({ pkgjson }) => pkgjson.dependencies['svite'],

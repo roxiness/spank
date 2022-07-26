@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'Routify',
     condition: ({ pkgjson }) => pkgjson.dependencies['@sveltech/routify'],
     config: () => {

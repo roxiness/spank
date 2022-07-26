@@ -1,4 +1,4 @@
-module.exports = {
+export default {
     name: 'Routify 2',
     condition: ({ pkgjson }) => pkgjson.dependencies['@roxi/routify']?.match(/^(\^|\~|\>\=)?2\./),
     config: () => {

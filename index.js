@@ -59,7 +59,6 @@ const makeRegex = str =>
 /** @param {Options['default']} options */
 export async function start(options) {
     options = await getConfig(options)
-    console.log('options', options)
 
     const blacklist = options.blacklist.map(makeRegex)
     const queue = new Queue(options.concurrently)
@@ -97,7 +96,6 @@ export async function start(options) {
 
     queue.onDone(() => saveRootFile())
 
-    console.log('optionsrenderer', options.renderer)
     const renderer = await getRenderer(options.renderer)
 
     /** @param {string[]} _urls */

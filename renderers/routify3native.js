@@ -10,11 +10,10 @@ const { existsSync, readFileSync } = fse
 export async function routify3native(template, script, url) {
     try {
         template = existsSync(template) ? readFileSync(template, 'utf-8') : template
-        const path = 'file:///' + process.cwd() + '/' + script+'?url='+url
+        const path = 'file:///' + process.cwd() + '/' + script + '?url=' + url
         const app = await import(path)
-        await app.load(url)
 
-        const { html, head, css } = app.default.render()
+        const { html, head, css } = await app.render(url)
 
         return template
             .replace('<!--ssr:html-->', html)

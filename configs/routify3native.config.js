@@ -5,7 +5,7 @@ export default {
     name: 'Routify 3 Native',
     condition: ({ pkgjson }) => {
         const isRoutify = pkgjson.dependencies['@roxi/routify']
-        const hasNativeSsrSyntax = fse.existsSync('dist/server/App.js')
+        const hasNativeSsrSyntax = fse.existsSync('dist/server/render.js')
         return isRoutify && hasNativeSsrSyntax
     },
     config: () => {
@@ -21,7 +21,7 @@ export default {
                 'index.html',
                 'src/index.html',
             ]),
-            script: './dist/server/App.js',
+            script: './dist/server/render.js',
             eventName: 'app-loaded',
             inlineDynamicImports: false,
         }

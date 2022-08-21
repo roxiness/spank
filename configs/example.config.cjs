@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     
     /** The name displayed in the terminal */
     name: 'My Framework',

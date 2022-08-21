@@ -1,4 +1,4 @@
-export default {
+module.exports = {
     name: 'Svite / Routify 2',
     supersedes: ['routify2', 'routify'],
     condition: ({ pkgjson }) => pkgjson.dependencies['@svitejs/vite-plugin-svelte'],

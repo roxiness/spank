@@ -1,11 +1,19 @@
-import { findFirstPath } from '../utils.js'
-import fse from 'fs-extra'
+const { existsSync } = require('fs-extra')
 
-export default {
+/**
+ * returns first path that exists
+ * @param {string[]} paths
+ */
+const findFirstPath = paths => {
+    for (const path of paths) if (existsSync(path)) return path
+}
+
+module.exports = {
     name: 'Routify 3 Native',
+    supersedes: ['routify2', 'routify', 'Svite / Routify 2'],
     condition: ({ pkgjson }) => {
         const isRoutify = pkgjson.dependencies['@roxi/routify']
-        const hasNativeSsrSyntax = fse.existsSync('dist/server/render.js')
+        const hasNativeSsrSyntax = existsSync('dist/server/render.js')
         return isRoutify && hasNativeSsrSyntax
     },
     config: () => {

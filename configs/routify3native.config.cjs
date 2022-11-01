@@ -22,6 +22,7 @@ module.exports = {
             sitemap: ['/index'],
             outputDir: 'dist/client',
             template: findFirstPath([
+                'dist/server/index.html',
                 'dist/client/__app.html',
                 'dist/client/index.html',
                 'dist/index.__app',

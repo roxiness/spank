@@ -75,7 +75,7 @@ export async function start(options) {
             .replace(originRe, '')
             .replace(/^\.\//, '') // normalize "./relative" urls to "relative"
             .replace(/^([^/])/, `${parent}/$1`) // prefix all relative urls with their parent
-            .replace(/#.*/, '') // discard anything after a #
+            .replace(/[#\?].*/, '') // discard anything after a # and ?
             .replace(/\/*$/, '') // remove trailing slashes
             .replace(/\/index$/, '') // remove index
 

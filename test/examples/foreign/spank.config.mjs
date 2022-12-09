@@ -11,3 +11,6 @@ export default {
     // inlineDynamicImports: false,
     // concurrently: 3
 }
+
+
+// todo use execSync for import - but what about functions

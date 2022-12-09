@@ -3,11 +3,11 @@ import assert from 'assert'
 import fse from 'fs-extra'
 import { execSync, spawnSync } from 'child_process'
 import { resolve } from 'path'
-import { URL, pathToFileURL } from 'url'
+import { URL, fileURLToPath } from 'url'
 
 const { removeSync, readFileSync, existsSync } = fse
 export const cli = (args, url) => {
-    const cwd =  (new URL('.', url)).href.replace('file:///','')
+    const cwd =  fileURLToPath(new URL('.', url))
     const cliPath =  (new URL('../cli.js', import.meta.url)).href.replace('file:///','')
     
     const output = resolve(cwd, 'output')

@@ -8,7 +8,7 @@ export default {
     blacklist: [],
     concurrently: 3,
     eventName: "",
-    depth: 2,
+    depth: 5,
     writeSummary: false,
     copyTemplateTo: null,
     renderer: 'tossr',

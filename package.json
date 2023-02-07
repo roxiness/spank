@@ -11,7 +11,8 @@
     "url": "git+https://github.com/roxiness/spank.git"
   },
   "scripts": {
-    "test": "probs test"
+    "test": "probs test",
+    "publish": "npx standard-version"
   },
   "type": "module",
   "author": "jakobrosenberg@gmail.com",

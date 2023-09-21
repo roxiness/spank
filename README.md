@@ -31,7 +31,7 @@ spank can also be used without a config. Use `npx spank --help` for parameters.
 
 | prop |default| description |
 |------|-|-------------|
-|sitemap|| .js or .json file with a list of relative paths. Eg. `['/', '/about', '/contact']`|
+|sitemap|| array of paths. Eg. `['/', '/about', '/contact']`. Can also be a path to a .js file exporting an array of paths. Eg. `./sitemap.js`|
 |template|`dist/__app.html`| path to the HTML template to render the SPA in. Often `static/index.html`|
 |script|`dist/build/bundle.js`| Path to the app script. Often `dist/build/bundle.js` or `dist/build/main.js`|
 |outputDir|`dist`| Folder to save HTML files to.|

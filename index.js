@@ -1,4 +1,4 @@
-/** @typedef {import('./defaults')} Options */
+/** @typedef {import('./defaults')['default']} Options */
 /** @typedef {{path: string, children?: Url[]}} Url */
 
 import { resolve } from 'path'
@@ -161,14 +161,17 @@ function writeSummary(urls, options) {
 }
 /**
  * returns html, nested urls
- * @param {string} url½
+ * @param {string} url
  * @param {(template: string, script: string, url: string, options: any)=>string} renderer
  * @param {Options} options
  * @returns {Promise<{html: string, urls: string[], url: string, file: string}>}
  */
 async function parseUrl(url, renderer, options) {
     const { template, script } = options
-    const html = await renderer(template, script, url, options.renderOptions)
+    let html = await renderer(template, script, url, options.renderOptions)
+    
+    html = options.transform(html, url)
+
 
     const dom = parse(html)
     const urls = dom

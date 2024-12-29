@@ -12,6 +12,7 @@ export default {
     writeSummary: false,
     copyTemplateTo: null,
     renderer: 'tossr',
+    transform: (html, url) => html,
     /** @type {any} */
     renderOptions: {
         eventName: 'app-loaded',

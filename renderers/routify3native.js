@@ -7,7 +7,7 @@ const { existsSync, readFileSync } = fse
  * @param {string} url
  * @returns
  */
-export async function routify3native(template, script, url) {
+export async function routify3native(template, script, url, options) {
     try {
         template = existsSync(template) ? readFileSync(template, 'utf-8') : template
         const path = 'file:///' + process.cwd() + '/' + script + '?url=' + url
@@ -18,7 +18,7 @@ export async function routify3native(template, script, url) {
         return template
             .replace('<!--ssr:html-->', html)
             .replace('<!--ssr:head-->', head)
-            .replace('<!--ssr:css-->', '<style>' + css.code + '</style>')
+            .replace('<!--ssr:css-->', '<style>' + css?.code || '' + '</style>')
     } catch (err) {
         console.error(`failed to render "${url}"\n`, err)
         return template.replace('<!--ssr:html-->', `<h3>failed to render "${url}"</h3>`)

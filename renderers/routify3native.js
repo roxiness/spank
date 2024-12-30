@@ -18,7 +18,7 @@ export async function routify3native(template, script, url, options) {
         return template
             .replace('<!--ssr:html-->', html)
             .replace('<!--ssr:head-->', head)
-            .replace('<!--ssr:css-->', '<style>' + css?.code || '' + '</style>')
+            .replace('<!--ssr:css-->', '<style>' + (css?.code || '') + '</style>')
     } catch (err) {
         console.error(`failed to render "${url}"\n`, err)
         return template.replace('<!--ssr:html-->', `<h3>failed to render "${url}"</h3>`)

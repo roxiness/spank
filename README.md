@@ -43,6 +43,7 @@ spank can also be used without a config. Use `npx spank --help` for parameters.
 |blacklist|[]|List of paths to be ignored. Regular expressions are supported when using spank.config.js|
 |depth|2|How far to crawl any path in the sitemap|
 |ssrOptions|{}|Options to be passed to [tossr](https://github.com/roxiness/tossr#config)|
+|transform|(html, url) => html|Callback for transforming HTML|
 ---
 
 ### How does it work?

@@ -23,7 +23,6 @@
     "configent": "^3.0.0-14",
     "fs-extra": "^10.1.0",
     "node-html-parser": "^1.2.21",
-    "ora": "^5.1.0",
     "tossr": "^1.4.1"
   },
   "devDependencies": {

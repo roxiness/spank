@@ -6,10 +6,8 @@ import { outputFile } from 'fs-extra'
 import { parse } from 'node-html-parser'
 import { getConfig } from './getConfig.js'
 
-import ora from 'ora'
 import { readFileSync } from 'fs'
 import { isNotIn, isUnique } from './utils.js'
-let spinner
 
 const getRenderer = async renderer => {
     const resolvers = [
@@ -86,8 +84,6 @@ export async function start(options) {
 
     const urls = rawUrls.map(normalize(''))
 
-    spinner = ora({ interval: 20 }).start()
-
     /** @param {string} url */
     const isntBlacklisted = url => !blacklist.some(e => e.test(url))
 
@@ -103,7 +99,7 @@ export async function start(options) {
         _urls.filter(isntBlacklisted).forEach(url => {
             queue.push(async () => {
                 counter++
-                spinner.text = `Exporting ${counter} of ${urls.length} ${url}`
+                console.log(`Exporting ${counter} of ${urls.length} ${url}`)
                 const parsedUrl = await parseUrl(url, renderer, options)
                 const saveFile = () =>
                     outputFile(`${options.outputDir + parsedUrl.file}`, parsedUrl.html)
@@ -130,7 +126,7 @@ export async function start(options) {
 
     const time = Date.now()
     await new Promise(resolve => queue.onDone(resolve))
-    spinner.succeed(
+    console.log(
         `[spank] Exported ${counter} pages (${
             urls.length - counter
         } ignored) from total ${urls.length} pages in ${Date.now() - time} ms`,

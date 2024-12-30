@@ -30,7 +30,7 @@ module.exports = {
                 'index.html',
                 'src/index.html',
             ]),
-            script: './dist/server/render.js',
+            script: './dist/server/serve.js',
             eventName: 'app-loaded',
             inlineDynamicImports: false,
         }

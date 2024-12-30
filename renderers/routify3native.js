@@ -1,26 +1,28 @@
-import fse from 'fs-extra'
-const { existsSync, readFileSync } = fse
+import { Worker } from 'worker_threads'
+import { pathToFileURL, fileURLToPath } from 'url'
+import path from 'path'
+
 /**
- * Renders a single Routify 3 page
- * @param {string} template path to template (index.html)
- * @param {string} script path to script (App.js)
- * @param {string} url
- * @returns
+ * Runs the Routify 3 native renderer in a worker
+ * @param {string} template Path to template (index.html)
+ * @param {string} script Path to script (App.js)
+ * @param {string} url URL to render
+ * @param {object} options Additional options
+ * @returns {Promise<string>} Rendered HTML
  */
-export async function routify3native(template, script, url, options) {
-    try {
-        template = existsSync(template) ? readFileSync(template, 'utf-8') : template
-        const path = 'file:///' + process.cwd() + '/' + script + '?url=' + url
-        const app = await import(path)
+export async function routify3native(template, script, url, options = {}) {
+    const workerPath = new URL(path.dirname(import.meta.url) + '/routify3nativeWorker.js')
+    return new Promise((resolve, reject) => {
+        const worker = new Worker(workerPath, {
+            workerData: { script, url },
+        })
 
-        const { html, head, css } = await app.render(url)
-
-        return template
-            .replace('<!--ssr:html-->', html)
-            .replace('<!--ssr:head-->', head)
-            .replace('<!--ssr:css-->', '<style>' + (css?.code || '') + '</style>')
-    } catch (err) {
-        console.error(`failed to render "${url}"\n`, err)
-        return template.replace('<!--ssr:html-->', `<h3>failed to render "${url}"</h3>`)
-    }
+        worker.on('message', resolve) // Receive HTML from the worker
+        worker.on('error', reject) // Handle worker errors
+        worker.on('exit', code => {
+            if (code !== 0) {
+                reject(new Error(`Worker exited with code ${code}`))
+            }
+        })
+    })
 }

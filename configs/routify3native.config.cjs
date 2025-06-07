@@ -13,7 +13,7 @@ module.exports = {
     supersedes: ['routify2', 'routify', 'Svite / Routify 2'],
     condition: ({ pkgjson }) => {
         const isRoutify = pkgjson.dependencies['@roxi/routify']
-        const hasNativeSsrSyntax = existsSync('dist/server/render.js')
+        const hasNativeSsrSyntax = existsSync('dist/server/render.js') || existsSync('dist/server/serve.js')
         return isRoutify && hasNativeSsrSyntax
     },
     config: () => {
